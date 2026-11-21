@@ -1,0 +1,58 @@
+/* Standalone restaurant page. Reuses the dashboard styles (wrapper has class "dash"),
+   with the sidebar's purple palette and a centred, full-width layout. */
+.rp {
+  --primary: #5b02a5;
+  --primary-700: #470182;
+  --primary-50: #f6f0fc;
+  --primary-100: #e5d5f5;
+}
+.rp-back { font-weight: 700; color: var(--primary); text-decoration: none; font-size: 13.5px; white-space: nowrap; }
+.rp-back:hover { text-decoration: underline; }
+.rp .dash-top-right { gap: 16px; }
+
+.rp-main { max-width: 1200px; margin: 0 auto; padding: 20px 24px 64px; }
+.rp-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+
+/* two columns: restaurant (photo, details, menu, branches) left — offers right, wider */
+.rp-grid { display: grid; grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.rp-left { display: flex; flex-direction: column; gap: 16px; }
+.rp-right { min-width: 0; }
+.rp-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+.rp-pad { padding: 16px 18px; }
+.rp-pad > .d-section:first-child { border-top: 0; margin-top: 0; padding-top: 0; }
+
+/* left: photo with the round logo half on it, then name / rating / address / status */
+.rp-hero .offer-cover { aspect-ratio: 4 / 3; }
+.rp-hero .offer-logo { left: 18px; width: 84px; height: 84px; font-size: 26px; }
+.rp-hero .offer-closed b { font-size: 24px; }
+.rp-title { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 52px 18px 6px; }
+.rp-title h1 { margin: 0; font-size: 24px; line-height: 1.2; }
+.rp-addr { display: flex; gap: 6px; margin: 4px 0 0; font-size: 13px; }
+.rp-addr svg { margin-top: 2px; width: 14px; height: 14px; color: var(--primary); flex: none; }
+.rp-left .link-row { margin: 0; }
+/* Google Maps fills the row; bank site / website / share are icon buttons beside it */
+.rp-left .menu-grid { grid-template-columns: repeat(3, 1fr); }
+
+/* right: offers get the room */
+.rp-right .offers-sec h3 { font-size: 17px; }
+.rp-right .offer-list { display: flex; flex-direction: column; gap: 12px; } /* one offer per row */
+
+/* loading */
+.rp-sk-cover { aspect-ratio: 16 / 5; border-radius: 0; }
+.rp-sk-lines { padding: 56px 24px 28px; display: flex; flex-direction: column; gap: 8px; }
+
+@media (max-width: 900px) {
+  .rp-grid { grid-template-columns: 1fr; }
+  .rp-left { position: static; }
+  .rp-hero .offer-cover { aspect-ratio: 16 / 7; }
+}
+@media (max-width: 760px) {
+  .rp-back { display: none; }
+}
+@media (max-width: 560px) {
+  .rp-main { padding: 14px 12px 48px; }
+  .rp-hero .offer-logo { left: 14px; width: 72px; height: 72px; }
+  .rp-title { padding: 44px 14px 6px; }
+  .rp-title h1 { font-size: 21px; }
+  .rp-pad { padding: 14px; }
+}

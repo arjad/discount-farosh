@@ -1,0 +1,16 @@
+{
+  "name": "discount-farosh",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Discount Farosh — frontend (Vite) + backend (FastAPI)",
+  "scripts": {
+    "prestart": "node scripts/check-ports.mjs",
+    "start": "concurrently --kill-others-on-fail --names api,web --prefix-colors cyan,yellow \"npm:start:api\" \"npm:start:web\"",
+    "start:api": "cd backend && .venv/bin/python -m uvicorn app.main:app --port 8000 --reload --reload-dir app --timeout-graceful-shutdown 5",
+    "start:web": "npm --prefix frontend run dev",
+    "setup": "npm install && npm --prefix frontend install && cd backend && uv venv && uv pip install -r requirements.txt && .venv/bin/python -m playwright install chromium"
+  },
+  "devDependencies": {
+    "concurrently": "9.1.0"
+  }
+}

@@ -1,0 +1,21 @@
+.nf {
+  --primary: #5b02a5; --primary-50: #f6f0fc; --primary-100: #e5d5f5;
+  --ink: #1c1a22; --muted: #64606c; --line: #e7e5ec;
+  min-height: 100vh; background: #f6f5f8; color: var(--ink);
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.5;
+  display: flex; flex-direction: column;
+}
+body:has(.nf) { margin: 0; background: #f6f5f8; }
+.nf *, .nf *::before, .nf *::after { box-sizing: border-box; }
+.nf-top { height: 64px; display: flex; align-items: center; padding: 0 24px; background: #fff; border-bottom: 1px solid var(--line); }
+.nf-top img { height: 36px; display: block; }
+.nf-main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 48px 20px; }
+.nf-icon { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: #fff8db; color: #9a7000; margin-bottom: 18px; }
+.nf-icon svg { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.nf h1 { margin: 0 0 8px; font-size: clamp(22px, 4vw, 30px); line-height: 1.2; max-width: 560px; }
+.nf p { margin: 0 0 24px; color: var(--muted); max-width: 460px; }
+.nf-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.nf-btn { display: inline-flex; align-items: center; height: 44px; padding: 0 18px; border-radius: 11px; font-weight: 700; text-decoration: none; color: var(--primary); border: 1px solid var(--primary-100); background: #fff; }
+.nf-btn:hover { background: var(--primary-50); }
+.nf-btn.primary { border-color: var(--primary); }
+.nf-path { margin-top: 22px; font-size: 12px; color: #9a96a3; word-break: break-all; }

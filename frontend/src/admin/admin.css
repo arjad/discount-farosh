@@ -1,0 +1,32 @@
+.admin {
+  --bg: #f6f7f9; --surface: #fff; --text: #16181d; --muted: #646b78; --border: #e3e6eb;
+  --accent: #0f766e; --ok: #1a7f4b; --ok-bg: #e3f5eb; --bad: #b42318; --bad-bg: #fdecea;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--text);
+  background: var(--bg); min-height: 100vh; max-width: none; padding: 32px max(16px, calc((100vw - 1100px) / 2));
+}
+@media (prefers-color-scheme: dark) {
+  .admin { --bg: #111317; --surface: #1a1d23; --text: #e7e9ee; --muted: #9aa1ad; --border: #2b2f37;
+    --accent: #5eead4; --ok: #5fd39a; --ok-bg: #16301f; --bad: #ff8a80; --bad-bg: #3a1a18; }
+}
+.admin h1 { margin: 0; font-size: 28px; }
+.admin h2 { margin: 0 0 2px; font-size: 17px; }
+.admin .muted { color: var(--muted); }
+.admin .small { font-size: 12px; }
+.admin a { color: var(--accent); }
+.admin header { margin-bottom: 24px; }
+.admin .banner { background: var(--bad-bg); color: var(--bad); padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; }
+.admin .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+.admin .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; min-width: 0; }
+.admin .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.admin button { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 8px 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.admin button:disabled { opacity: .6; cursor: progress; }
+.admin .result { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+.admin .pill { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; }
+.admin .pill.success { background: var(--ok-bg); color: var(--ok); }
+.admin .pill.failed { background: var(--bad-bg); color: var(--bad); }
+.admin .error { display: grid; grid-template-columns: 80px 1fr; gap: 4px 8px; margin: 12px 0 0; font-size: 13px;
+  background: var(--bad-bg); padding: 10px; border-radius: 8px; overflow-wrap: anywhere; }
+.admin .error dt { color: var(--muted); }
+.admin .error dd { margin: 0; }
+.admin .offers { margin: 12px 0 0; padding-left: 18px; max-height: 280px; overflow: auto; font-size: 14px; }
+.admin .offers li { margin-bottom: 6px; }

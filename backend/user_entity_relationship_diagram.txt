@@ -1,0 +1,137 @@
+=====================================================================================
+                    OFFERWALA — ENTITY RELATIONSHIP DIAGRAM (PostgreSQL)
+=====================================================================================
+
+  LEGEND
+    PK  = primary key            1 ──< *   = one-to-many
+    FK  = foreign key            * >──< *  = many-to-many (through a link table)
+    UQ  = unique                 every main table also has created_at, updated_at
+
+
+                                     THE BIG PICTURE
+                                     ───────────────
+
+        ┌─────────┐   1 ──< *   ┌─────────┐
+        │  BANKS  │────────────>│  CARDS  │
+        └─────────┘             └─────────┘
+             │ 1                     │ 1
+             │                       │
+             │ *                     │ *
+             v              ┌────────────────┐
+        ┌─────────┐   1 ──< │  offer_cards   │   (per-card discount)
+        │ OFFERS  │────────>└────────────────┘
+        └─────────┘
+          │ 1   │ 1
+          │     │          ┌────────────────────┐  * >── 1  ┌──────────────┐
+          │     └─────────>│  offer_businesses  │──────────>│  BUSINESSES  │
+          │          1──<* └────────────────────┘           └──────────────┘
+          │                                                  (one location each)
+          │          1──<* ┌────────────────────────┐ * >── 1 ┌─────────┐
+          └───────────────>│  user_favourite_offers │────────>│  USERS  │
+                           └────────────────────────┘         └─────────┘
+
+     In words:
+       • One BANK has many CARDS            (Platinum, Gold, Silver ...)
+       • One BANK publishes many OFFERS
+       • OFFERS  <──>  CARDS       many-to-many through offer_cards
+                                   (each card can have its OWN discount on the same offer)
+       • OFFERS  <──>  BUSINESSES  many-to-many through offer_businesses
+                                   (one offer at many branches / restaurants)
+       • A BUSINESS accepts many cards  → found through its offers
+       • A BUSINESS has ONE location     (address, city, latitude, longitude)
+       • USERS   <──>  OFFERS      many-to-many through user_favourite_offers (favourites)
+
+
+=====================================================================================
+                                    TABLES IN DETAIL
+=====================================================================================
+
+  ┌────────────────────────────────────┐          ┌────────────────────────────────────┐
+  │ banks                              │          │ cards                              │
+  ├────────────────────────────────────┤          ├────────────────────────────────────┤
+  │ PK  id              bigint         │ 1 ──< *  │ PK  id              bigint         │
+  │ UQ  slug            varchar(50)    │─────────>│ FK  bank_id      →  banks.id       │
+  │     name            varchar(150)   │          │     name            varchar(150)   │
+  │     base_url        varchar(500)   │          │     tier            platinum/gold..│
+  │     discounts_url   varchar(500)   │          │     card_type       debit/credit   │
+  │     logo_url        varchar(500)   │          │     network         visa/master..  │
+  │     last_scraped_at timestamptz    │          │     image_url       varchar(500)   │
+  └────────────────────────────────────┘          │ UQ (bank_id, name)                 │
+                   │ 1                            └────────────────────────────────────┘
+                   │                                               │ 1
+                   ^ *                                             │
+  ┌────────────────────────────────────┐                           ^ *
+  │ offers                             │          ┌────────────────────────────────────┐
+  ├────────────────────────────────────┤          │ offer_cards        (link table)    │
+  │ PK  id              bigint         │ 1 ──< *  ├────────────────────────────────────┤
+  │ FK  bank_id      →  banks.id       │─────────>│ PK,FK offer_id   →  offers.id      │
+  │     fingerprint     varchar(64)    │          │ PK,FK card_id    →  cards.id       │
+  │     title           varchar(300)   │          │       discount_percent  numeric    │
+  │     description     text           │          │       max_discount_amount numeric  │
+  │     terms           text           │          └────────────────────────────────────┘
+  │     category        dining/health..│            ↑ per-card discount, e.g.
+  │     discount_percent numeric(5,2)  │              Platinum 40% (cap 7000), Gold 25%
+  │     max_discount_amount numeric    │
+  │     currency        PKR            │          ┌────────────────────────────────────┐
+  │     valid_days      [Mon,Fri,..]   │ 1 ──< *  │ offer_businesses   (link table)    │
+  │     valid_from      date           │─────────>├────────────────────────────────────┤
+  │     valid_till      date           │          │ PK,FK offer_id    →  offers.id     │
+  │     source_url      varchar(1000)  │          │ PK,FK business_id →  businesses.id │
+  │     image_url       varchar(1000)  │          └────────────────────────────────────┘
+  │     is_active       boolean        │                           v *
+  │     first_seen_at   timestamptz    │                           │
+  │     last_seen_at    timestamptz    │                           │ 1
+  │ UQ (bank_id, fingerprint)          │          ┌────────────────────────────────────┐
+  └────────────────────────────────────┘          │ businesses                         │
+                   │ 1                            ├────────────────────────────────────┤
+                   │                              │ PK  id              bigint         │
+                   ^ *                            │ UQ  slug            varchar(200)   │
+  ┌────────────────────────────────────┐          │     name            varchar(200)   │
+  │ user_favourite_offers (link table) │          │     category        restaurant/..  │
+  ├────────────────────────────────────┤          │     phone           varchar(30)    │
+  │ PK,FK user_id    →  users.id       │          │     website         varchar(500)   │
+  │ PK,FK offer_id   →  offers.id      │          │     logo_url        varchar(500)   │
+  │       created_at    timestamptz    │          │   ── location (one per business) ──│
+  └────────────────────────────────────┘          │     address         text           │
+                   v *                            │     area            varchar(120)   │
+                   │                              │     city            varchar(80)    │
+                   │ 1                            │     latitude        numeric(9,6)   │
+  ┌────────────────────────────────────┐          │     longitude       numeric(9,6)   │
+  │ users                              │          └────────────────────────────────────┘
+  ├────────────────────────────────────┤
+  │ PK  id              bigint         │
+  │ UQ  email           varchar(255)   │
+  │     full_name       varchar(150)   │
+  │     phone           varchar(30)    │
+  │     password_hash   varchar(255)   │
+  │     city            varchar(80)    │
+  │     is_active       boolean        │
+  └────────────────────────────────────┘
+
+
+  ┌────────────────────────────────────┐
+  │ waitlist_signups   (standalone)    │   pre-launch sign-ups from the homepage,
+  ├────────────────────────────────────┤   not linked to other tables
+  │ PK  id              bigint         │
+  │ UQ  email           varchar(255)   │
+  │     full_name       varchar(150)   │
+  │     phone           varchar(30)    │
+  │     city            varchar(80)    │
+  │     banks           [bank slugs]   │
+  │     source          varchar(50)    │
+  └────────────────────────────────────┘
+
+
+=====================================================================================
+                          EXAMPLE: HOW ONE SCRAPED DEAL IS STORED
+=====================================================================================
+
+   banks          MCB Bank
+     └─ cards        MCB Platinum Debit, MCB Gold Credit ...
+     └─ offers       "30% off on Every Saturday"   valid_days=[Sat]  valid_till=2026-12-31
+          ├─ offer_cards        Platinum → 30%,  Gold → 30%  ...
+          └─ offer_businesses   Cafe Zouk (Gulberg, Lahore, lat 31.5, lng 74.3)
+
+   Deleting a bank deletes its cards and offers (CASCADE); deleting an offer
+   removes its rows in offer_cards, offer_businesses and user_favourite_offers.
+=====================================================================================
