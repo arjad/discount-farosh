@@ -27,6 +27,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
 
 from app.core.config import get_settings
+from app.core.http import SSL_CONTEXT
 
 router = APIRouter(prefix="/api/places", tags=["places"])
 
@@ -62,7 +63,7 @@ def _call(method: str, url: str, headers: dict[str, str], body: dict | None = No
     req = urllib.request.Request(url, data=data, method=method,
                                  headers={**headers, **({"Content-Type": "application/json"} if data else {})})
     try:
-        with urllib.request.urlopen(req, timeout=8) as r:
+        with urllib.request.urlopen(req, timeout=8, context=SSL_CONTEXT) as r:
             return json.loads(r.read() or b"{}")
     except urllib.error.HTTPError as e:
         try:

@@ -47,22 +47,15 @@
 }
 .dash-top-inner {
   height: 100%; max-width: 1440px; margin: 0 auto; padding: 0 24px;
-  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px;
+  /* logo | address | profile. The sides always keep their full width; a long address shrinks and is cut
+     off with "…" (full text in the tooltip) instead of covering the logo or the profile. */
+  display: grid; grid-template-columns: minmax(max-content, 1fr) minmax(0, auto) minmax(max-content, 1fr); align-items: center; gap: 16px;
 }
 .dash-top-inner > .dash-brand { justify-self: start; }
 .dash-top-inner > .dash-top-right { justify-self: end; }
 
 /* ---------------------------------------------------------------- address picker (top bar, centre) */
-.ap { position: relative; justify-self: center; min-width: 0; }
-.ap-trigger {
-  display: inline-flex; align-items: center; gap: 6px; max-width: 380px; min-width: 0;
-  height: 38px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent;
-  color: #8e8a96; font-size: 13.5px; font-weight: 500; cursor: pointer;
-}
-.ap-trigger:hover, .ap-trigger[aria-expanded="true"] { background: #f3f2f6; color: var(--muted); }
-.dash .ap-trigger > svg:first-child { color: var(--primary); }
-.dash .ap-trigger > svg:last-child { width: 14px; height: 14px; }
-.ap-label { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* the address button styles live in addressPicker.css */
 .ap-panel {
   position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); z-index: 45;
   width: min(420px, calc(100vw - 24px)); max-height: min(560px, calc(100vh - var(--top-h) - 24px)); overflow-y: auto;
@@ -186,6 +179,7 @@
   align-self: start;
   max-height: calc(100vh - var(--top-h) - 48px);
   overflow-y: auto;
+  overscroll-behavior: contain; /* reaching the end of the filters doesn't start scrolling the page */
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -237,6 +231,9 @@
   font-weight: 600; font-size: 12.5px; color: var(--muted);
 }
 .seg button small { font-size: 11px; font-weight: 600; opacity: 0.75; }
+.chips-off { opacity: 0.6; }
+.chip:disabled { cursor: not-allowed; }
+.chip:disabled:hover { border-color: var(--line); }
 .seg button.on { background: #fff; color: var(--primary); box-shadow: 0 1px 3px rgba(20, 16, 30, 0.12); }
 .seg button:hover:not(.on) { color: var(--ink); }
 
@@ -248,7 +245,7 @@
 }
 .day:hover { border-color: var(--primary); }
 .day.today::after { content: ""; position: absolute; bottom: 2px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--primary); }
-.day.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.day.on { background: var(--primary-50); border-color: #c9a9ec; color: var(--primary); }
 .day.on.today::after { background: var(--accent); }
 
 .check {
@@ -281,8 +278,8 @@
 }
 .chip small { color: var(--muted); font-size: 11.5px; }
 .chip:hover { border-color: var(--primary); }
-.chip.on { background: var(--primary); border-color: var(--primary); color: #fff; }
-.chip.on small { color: rgba(255, 255, 255, 0.75); }
+.chip.on { background: var(--primary-50); border-color: #c9a9ec; color: var(--primary); font-weight: 600; }
+.chip.on small { color: var(--primary); opacity: 0.75; }
 
 .filters input[type="range"] { width: 100%; accent-color: var(--primary); }
 .range-scale { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); }
@@ -738,6 +735,9 @@
   .filters {
     position: fixed; top: 0; left: 0; bottom: 0; z-index: 50;
     width: min(340px, 88vw); max-height: none;
+    /* fill exactly the screen height and scroll inside. (The desktop "align-self: start" would let a fixed
+       panel grow to its full content height — past the bottom of the screen — in current browsers.) */
+    align-self: stretch; height: 100vh; height: 100dvh;
     border-radius: 0 16px 16px 0; border: 0;
     transform: translateX(-102%); transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
     padding-bottom: 0;
@@ -776,3 +776,40 @@
 }
 
 body:has(.dash) { margin: 0; background: #f6f5f8; }
+
+/* "(12)" next to the discount, with a tooltip "12 offers available" */
+.offer-deal .offer-pct { flex: 0 1 auto; min-width: 0; }
+.offer-count {
+  position: relative; flex: none; align-self: baseline;
+  color: var(--muted); font-weight: 700; font-size: 14px; cursor: help; outline: none;
+  border-bottom: 1px dotted currentColor; line-height: 1.15;
+}
+.offer-count:hover, .offer-count:focus-visible { color: var(--primary); }
+.offer-count::after {
+  content: attr(data-tip);
+  position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translate(-50%, 4px);
+  padding: 6px 10px; border-radius: 8px; background: #1c1a22; color: #fff;
+  font-size: 12px; font-weight: 600; white-space: nowrap; letter-spacing: 0;
+  box-shadow: 0 6px 18px rgba(20, 16, 30, 0.25);
+  opacity: 0; pointer-events: none; transition: opacity 0.15s, transform 0.15s; z-index: 5;
+}
+.offer-count::before {
+  content: ""; position: absolute; left: 50%; bottom: calc(100% + 3px); transform: translate(-50%, 4px);
+  border: 5px solid transparent; border-top-color: #1c1a22; border-bottom: 0;
+  opacity: 0; pointer-events: none; transition: opacity 0.15s, transform 0.15s; z-index: 5;
+}
+.offer-count:hover::after, .offer-count:focus-visible::after, .offer-count:hover::before, .offer-count:focus-visible::before {
+  opacity: 1; transform: translate(-50%, 0);
+}
+
+/* lists inside the filters stop at their end too (no scrolling the page through them) */
+.filters .scroll-list { overscroll-behavior: contain; }
+/* while the filters drawer is open on phone / tablet, the page behind it doesn't scroll */
+@media (max-width: 900px) {
+  body:has(.filters.open) { overflow: hidden; }
+}
+
+/* keep each list row's hidden checkbox inside its row and list — otherwise the hundreds of hidden inputs in
+   the Restaurant / Area / Bank lists stretch the whole filter panel into thousands of px of empty scroll */
+.filters .check { position: relative; }
+.filters .scroll-list { position: relative; }

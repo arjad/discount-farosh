@@ -4,6 +4,7 @@
  *   /offer/<id>-<name>        same page, that offer highlighted and scrolled into view
  * This is what the Share buttons hand out.
  */
+import { recordViews } from "../shared/views";
 import { useEffect, useMemo, useState } from "react";
 import logo from "../assets/logo.png";
 import { authApi, type Me } from "../auth/api";
@@ -81,6 +82,7 @@ export default function RestaurantPage() {
         setOffers(hit.offers);
         setFocus(hit.focus);
         setState("ready");
+        recordViews(hit.focus != null ? [hit.focus] : hit.offers.map((x) => x.id), "link");
         const name = placeName(hit.offers[0]);
         const f = hit.focus != null ? hit.offers.find((o) => o.id === hit.focus) : null;
         document.title = f && f.discount_percent != null ? `${pct(f.discount_percent)} off at ${name}` : name;
@@ -129,7 +131,6 @@ export default function RestaurantPage() {
                 </span>
                 <span className="dash-user-text">
                   <b className="dash-user-name">{me.full_name || me.email}</b>
-                  <small className="dash-user-loc">{PIN}{addressLabel}</small>
                 </span>
               </a>
             ) : (

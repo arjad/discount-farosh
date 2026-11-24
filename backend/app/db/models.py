@@ -9,7 +9,7 @@
     businesses: one location each (address, city, lat/lng columns)
     users *──* offers (user_favourite_offers) a user saves many favourite offers
 """
-from datetime import date, datetime
+from datetime import date, datetime, time
 from decimal import Decimal
 
 from sqlalchemy import (
@@ -25,6 +25,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    Time,
     UniqueConstraint,
     func,
 )
@@ -54,10 +55,17 @@ class User(TimestampMixin, Base):
     phone: Mapped[str | None] = mapped_column(String(30))
     password_hash: Mapped[str | None] = mapped_column(String(255))
     city: Mapped[str | None] = mapped_column(String(80))
+    country: Mapped[str | None] = mapped_column(String(80))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    # "client" (finds deals) or "restaurant" (a restaurant owner/manager) — both log in at /login.
+    # "admin" — the one admin account (made with `python -m app.admin_cli`), logs in only on the admin app.
+    role: Mapped[str] = mapped_column(String(20), default="client", server_default="client")
+    restaurant_name: Mapped[str | None] = mapped_column(String(200))  # only for role "restaurant"
 
     # profile picture — a small JPEG data URL (the browser resizes it to 256px before upload)
     avatar: Mapped[str | None] = mapped_column(Text)
+    # restaurant accounts: cover photo — a JPEG data URL (the browser crops it to 3:1, 1500px wide)
+    cover: Mapped[str | None] = mapped_column(Text)
     # saved places — a label the user types, plus optional coordinates ("pin to my current location")
     home_label: Mapped[str | None] = mapped_column(String(300))
     home_lat: Mapped[Decimal | None] = mapped_column(Numeric(9, 6))
@@ -141,6 +149,9 @@ class Business(TimestampMixin, Base):
     rating: Mapped[Decimal | None] = mapped_column(Numeric(3, 2))
     rating_count: Mapped[int | None] = mapped_column(Integer)
     tags: Mapped[list[str] | None] = mapped_column(ARRAY(String(40)))  # food tags: Cafe, Desi, Italian...
+    # set when this row is a restaurant account's own branch (kept in sync by public/restaurant_sync.py)
+    restaurant_branch_id: Mapped[int | None] = mapped_column(
+        ForeignKey("restaurant_branches.id", ondelete="CASCADE"), unique=True)
 
     offers: Mapped[list["Offer"]] = relationship(secondary="offer_businesses", back_populates="businesses")
 
@@ -176,6 +187,9 @@ class Offer(TimestampMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
     first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    # set when a restaurant account added this deal itself (one offer per bank on the deal)
+    restaurant_deal_id: Mapped[int | None] = mapped_column(
+        ForeignKey("restaurant_deals.id", ondelete="CASCADE"), index=True)
 
     bank: Mapped[Bank] = relationship(back_populates="offers")
     card_links: Mapped[list["OfferCard"]] = relationship(back_populates="offer", cascade="all, delete-orphan")
@@ -278,3 +292,75 @@ class WaitlistSignup(TimestampMixin, Base):
     city: Mapped[str | None] = mapped_column(String(80))
     banks: Mapped[list[str] | None] = mapped_column(ARRAY(String(50)))  # bank slugs the user has cards with
     source: Mapped[str | None] = mapped_column(String(50))  # e.g. "homepage-hero"
+
+
+# ---------------------------------------------------------------- restaurant accounts (role "restaurant")
+
+class RestaurantBranch(TimestampMixin, Base):
+    """One location of a restaurant account — set on the map, so customers get exact distances."""
+    __tablename__ = "restaurant_branches"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(150))            # "Gulberg", "DHA Phase 5"
+    address: Mapped[str] = mapped_column(String(400))
+    lat: Mapped[Decimal] = mapped_column(Numeric(9, 6))
+    lng: Mapped[Decimal] = mapped_column(Numeric(9, 6))
+    phone: Mapped[str | None] = mapped_column(String(30))
+
+
+class RestaurantDeal(TimestampMixin, Base):
+    """A discount a restaurant adds itself.
+
+    Empty lists mean "all": no cards = for every customer, no days = every day, no branch_ids = every branch.
+    No end_date = runs until expired by hand. No start/end time = all day (end < start = runs past midnight).
+    Expired when expired_at is set (by the owner) or end_date has passed (Pakistan time).
+    """
+    __tablename__ = "restaurant_deals"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    code: Mapped[str] = mapped_column(String(20), unique=True)   # e.g. "DF-7K3P9Q", shown to customers
+    title: Mapped[str | None] = mapped_column(String(150))
+    discount_percent: Mapped[Decimal] = mapped_column(Numeric(5, 2))
+    max_discount: Mapped[int | None] = mapped_column(Integer)    # "up to Rs 1,000"
+    cards: Mapped[list] = mapped_column(JSONB, default=list, server_default="[]")  # [{bank_slug, bank_name, card_name|null}]
+    days: Mapped[list[int]] = mapped_column(ARRAY(Integer), default=list, server_default="{}")  # 0 = Mon … 6 = Sun
+    start_date: Mapped[date] = mapped_column(Date)
+    end_date: Mapped[date | None] = mapped_column(Date)
+    start_time: Mapped[time | None] = mapped_column(Time)
+    end_time: Mapped[time | None] = mapped_column(Time)
+    is_family: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
+    family_size: Mapped[int | None] = mapped_column(Integer)
+    branch_ids: Mapped[list[int]] = mapped_column(ARRAY(BigInteger), default=list, server_default="{}")
+    terms: Mapped[str | None] = mapped_column(Text)
+    expired_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        CheckConstraint("discount_percent > 0 AND discount_percent <= 100", name="ck_restaurant_deals_percent"),
+    )
+
+
+class OfferView(Base):
+    """A customer opened an offer — from a shared link or in the dashboard's sidebar.
+    The same viewer opening the same offer again within 30 minutes isn't counted twice."""
+    __tablename__ = "offer_views"
+    __table_args__ = (Index("ix_offer_views_offer_viewer", "offer_id", "viewer", "created_at"),)
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    offer_id: Mapped[int] = mapped_column(ForeignKey("offers.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    viewer: Mapped[str] = mapped_column(String(80))   # "u:<user id>" or "a:<random id kept in the browser>"
+    source: Mapped[str] = mapped_column(String(20))   # "link" or "sidebar"
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class OfferFavourite(Base):
+    """A customer saved (♥) an offer — logged in ("u:<id>") or not ("a:<random browser id>").
+    Lets a restaurant see how many people saved its deal."""
+    __tablename__ = "offer_favourites"
+
+    offer_id: Mapped[int] = mapped_column(ForeignKey("offers.id", ondelete="CASCADE"), primary_key=True)
+    viewer: Mapped[str] = mapped_column(String(80), primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

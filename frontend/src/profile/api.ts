@@ -16,10 +16,14 @@ export type Profile = {
   full_name: string | null;
   phone: string | null;
   city: string | null;
+  country?: string | null;
   avatar: string | null;
+  cover?: string | null;
   home: Place;
   work: Place;
   member_since: string;
+  role?: "client" | "restaurant";
+  restaurant_name?: string | null;
   cards: UserCard[];
   visits: Visit[];
 };
@@ -51,7 +55,7 @@ type PlaceIn = { label?: string | null; lat?: number | null; lng?: number | null
 
 export const profileApi = {
   get: () => call<Profile>("GET", "/api/profile"),
-  update: (patch: Partial<{ full_name: string; phone: string | null; city: string | null; avatar: string | null; home: PlaceIn; work: PlaceIn }>) =>
+  update: (patch: Partial<{ full_name: string; restaurant_name: string; phone: string | null; city: string | null; country: string | null; avatar: string | null; cover: string | null; home: PlaceIn; work: PlaceIn }>) =>
     call<Profile>("PATCH", "/api/profile", patch),
   addCard: (c: { bank_slug: string; bank_name: string; card_name: string }) => call<Profile>("POST", "/api/profile/cards", c),
   removeCard: (id: number) => call<Profile>("DELETE", `/api/profile/cards/${id}`),

@@ -3,10 +3,11 @@
 The dashboard filters on the client, so this returns everything (a few hundred offers).
 """
 from datetime import date, datetime
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -85,9 +86,14 @@ def _f(v) -> float | None:
 
 @router.get("/offers", response_model=DashboardData)
 async def dashboard_offers(session: AsyncSession = Depends(get_session)) -> DashboardData:
+    today = datetime.now(ZoneInfo("Asia/Karachi")).date()
     stmt = (
         select(Offer)
         .where(Offer.is_active.is_(True))
+        # restaurants' own deals: only between their start and end dates (they expire by themselves)
+        .where(or_(Offer.restaurant_deal_id.is_(None), and_(
+            or_(Offer.valid_from.is_(None), Offer.valid_from <= today),
+            or_(Offer.valid_till.is_(None), Offer.valid_till >= today))))
         .options(
             selectinload(Offer.bank),
             selectinload(Offer.businesses),

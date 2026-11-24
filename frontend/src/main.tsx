@@ -13,7 +13,7 @@ const Page = lazy(() =>
       : path.startsWith("/login") || path.startsWith("/signup")
       ? import("./auth/Auth")
       : path.startsWith("/dashboard")
-      ? import("./dashboard/Dashboard")
+      ? import("./dashboard/DashboardGate") // customers: deals · restaurants: their discounts — same URL
       : path === "/" || path === "/index.html"
       ? import("./home/Home")
       : import("./notfound/NotFound"), // anything else: "expired or not available"

@@ -56,3 +56,14 @@
   .rp-title h1 { font-size: 21px; }
   .rp-pad { padding: 14px; }
 }
+
+/* tablet / phone: restaurant info -> offers -> menu -> branches (menu & branches no longer above the offers).
+   The left column's panels join the single-column grid so they can be ordered around the offers. */
+@media (max-width: 900px) {
+  .rp-grid { gap: 16px; }
+  .rp-left { display: contents; }
+  .rp-left > .rp-info { order: 1; }
+  .rp-grid > .rp-right { order: 2; }
+  .rp-left > .rp-menu { order: 3; }
+  .rp-left > .rp-branches { order: 4; }
+}

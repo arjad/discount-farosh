@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     # Browser key for the interactive map (Maps JavaScript API). This one IS sent to the browser, so make
     # it a separate key restricted to your site's domain (HTTP referrers) and to Maps JavaScript API only.
     google_maps_browser_key: str | None = None
+    # OpenStreetMap Nominatim (address search / reverse geocoding — free, no key). Its usage policy requires
+    # an identifying User-Agent: put your app name + a contact URL or email here.
+    nominatim_user_agent: str = "DiscountFarosh/0.1 (location picker; set NOMINATIM_USER_AGENT with a contact)"
+    nominatim_email: str | None = None
     cors_origins: str = "http://localhost:5173"
     database_url: str = "postgresql+asyncpg://offerwala:change-me@localhost:5432/offerwala"
     db_echo: bool = False

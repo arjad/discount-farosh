@@ -2,13 +2,18 @@
   "name": "discount-farosh",
   "private": true,
   "version": "0.1.0",
-  "description": "Discount Farosh — frontend (Vite) + backend (FastAPI)",
+  "description": "Discount Farosh — customer site (frontend/, Vite), admin app (admin/, Vite) + backend (FastAPI)",
   "scripts": {
     "prestart": "node scripts/check-ports.mjs",
-    "start": "concurrently --kill-others-on-fail --names api,web --prefix-colors cyan,yellow \"npm:start:api\" \"npm:start:web\"",
+    "start": "concurrently --kill-others-on-fail --names api,web,admin,ready --prefix-colors cyan,yellow,magenta,gray \"npm:start:api\" \"npm:start:web\" \"npm:start:admin\" \"npm:welcome\"",
     "start:api": "cd backend && .venv/bin/python -m uvicorn app.main:app --port 8000 --reload --reload-dir app --timeout-graceful-shutdown 5",
     "start:web": "npm --prefix frontend run dev",
-    "setup": "npm install && npm --prefix frontend install && cd backend && uv venv && uv pip install -r requirements.txt && .venv/bin/python -m playwright install chromium"
+    "start:admin": "npm --prefix admin run dev",
+    "welcome": "node scripts/welcome.mjs",
+    "stop": "node scripts/stop.mjs",
+    "restart": "npm start",
+    "create-admin": "cd backend && .venv/bin/python -m app.admin_cli create --email",
+    "setup": "npm install && npm --prefix frontend install && npm --prefix admin install && cd backend && uv venv && uv pip install -r requirements.txt && .venv/bin/python -m playwright install chromium"
   },
   "devDependencies": {
     "concurrently": "9.1.0"

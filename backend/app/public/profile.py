@@ -11,10 +11,12 @@ from sqlalchemy.orm import selectinload
 from app.db.models import Offer, User, UserCard, UserVisit
 from app.db.session import get_session
 from app.public.auth import current_user
+from app.public.restaurant_sync import sync_owner
 
 router = APIRouter(prefix="/api/profile", tags=["profile"])
 
 MAX_AVATAR_CHARS = 400_000  # ~300 KB image as a data URL; the browser sends ~30 KB
+MAX_COVER_CHARS = 1_600_000  # ~1.2 MB image as a data URL; the browser sends ~150–300 KB
 
 
 class Place(BaseModel):
@@ -47,10 +49,14 @@ class Profile(BaseModel):
     full_name: str | None
     phone: str | None
     city: str | None
+    country: str | None = None
     avatar: str | None
+    cover: str | None = None
     home: Place
     work: Place
     member_since: datetime
+    role: str = "client"
+    restaurant_name: str | None = None
     cards: list[CardOut]
     visits: list[VisitOut]
 
@@ -61,10 +67,10 @@ def _f(v: Decimal | None) -> float | None:
 
 def _profile(u: User) -> Profile:
     return Profile(
-        id=u.id, email=u.email, full_name=u.full_name, phone=u.phone, city=u.city, avatar=u.avatar,
+        id=u.id, email=u.email, full_name=u.full_name, phone=u.phone, city=u.city, country=u.country, avatar=u.avatar, cover=u.cover,
         home=Place(label=u.home_label, lat=_f(u.home_lat), lng=_f(u.home_lng)),
         work=Place(label=u.work_label, lat=_f(u.work_lat), lng=_f(u.work_lng)),
-        member_since=u.created_at,
+        member_since=u.created_at, role=u.role, restaurant_name=u.restaurant_name,
         cards=[CardOut(id=c.id, bank_slug=c.bank_slug, bank_name=c.bank_name, card_name=c.card_name) for c in u.cards],
         visits=[VisitOut(id=v.id, offer_id=v.offer_id, place_name=v.place_name, place_address=v.place_address,
                          image_url=v.image_url, bank_name=v.bank_name, discount_percent=_f(v.discount_percent),
@@ -89,7 +95,10 @@ class ProfileUpdate(BaseModel):
     full_name: str | None = Field(default=None, max_length=150)
     phone: str | None = Field(default=None, max_length=30)
     city: str | None = Field(default=None, max_length=80)
+    country: str | None = Field(default=None, max_length=80)
+    restaurant_name: str | None = Field(default=None, max_length=200)  # restaurant accounts only
     avatar: str | None = None
+    cover: str | None = None  # restaurant accounts only
     home: Place | None = None
     work: Place | None = None
 
@@ -103,17 +112,27 @@ def _check_coord(p: Place) -> None:
 async def update_profile(body: ProfileUpdate, user: User = Depends(current_user),
                          session: AsyncSession = Depends(get_session)) -> Profile:
     sent = body.model_fields_set
-    for k in ("full_name", "phone", "city"):
+    for k in ("full_name", "phone", "city", "country"):
         if k in sent:
             v = (getattr(body, k) or "").strip() or None
             if k == "full_name" and not v:
                 raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Name can't be empty.")
             setattr(user, k, v)
+    if "restaurant_name" in sent and user.role == "restaurant":
+        v = (body.restaurant_name or "").strip()
+        if len(v) < 2:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Restaurant name can't be empty.")
+        user.restaurant_name = v
     if "avatar" in sent:
         a = body.avatar
         if a and (not a.startswith("data:image/") or len(a) > MAX_AVATAR_CHARS):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Profile picture must be an image under 300 KB.")
         user.avatar = a or None
+    if "cover" in sent and user.role == "restaurant":
+        c = body.cover
+        if c and (not c.startswith("data:image/") or len(c) > MAX_COVER_CHARS):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Cover photo must be an image under 1 MB.")
+        user.cover = c or None
     for key in ("home", "work"):
         if key in sent:
             p = getattr(body, key) or Place()
@@ -122,6 +141,8 @@ async def update_profile(body: ProfileUpdate, user: User = Depends(current_user)
             setattr(user, f"{key}_lat", Decimal(str(round(p.lat, 6))) if p.lat is not None else None)
             setattr(user, f"{key}_lng", Decimal(str(round(p.lng, 6))) if p.lng is not None else None)
     await session.commit()
+    if user.role == "restaurant" and sent & {"full_name", "restaurant_name", "phone", "city", "avatar", "cover"}:
+        await sync_owner(session, user)  # name / logo / cover / phone / city show on the customer copy
     return _profile(await _load(session, user.id))
 
 

@@ -9,9 +9,13 @@ from fastapi.middleware.gzip import GZipMiddleware
 from app.core.browser import browser_manager
 from app.core.config import get_settings
 from app.isolated.routes import router as isolated_router
+from app.admin.routes import router as admin_router
 from app.public.auth import router as auth_router
+from app.public.geo import router as geo_router
 from app.public.places import router as places_router
 from app.public.profile import router as profile_router
+from app.public.partner import router as partner_router
+from app.public.views import router as views_router
 from app.public.dashboard import router as dashboard_router
 from app.public.routes import router as public_router
 
@@ -43,7 +47,11 @@ app.add_middleware(
 )
 app.include_router(auth_router)
 app.include_router(profile_router)
+app.include_router(partner_router)
+app.include_router(views_router)
 app.include_router(places_router)
+app.include_router(geo_router)
 app.include_router(public_router)
 app.include_router(dashboard_router)
 app.include_router(isolated_router)
+app.include_router(admin_router)

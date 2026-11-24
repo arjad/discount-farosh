@@ -1,165 +1,267 @@
 /**
- * "Choose your location" — works like Foodpanda's address screen:
- *   • search box at the top (Google suggestions as you type)
- *   • a map with the pin fixed in the middle — drag the MAP to move it to your exact door
- *   • the address under the pin, split into house no. / street / area / city (editable, filled by Google)
- *   • quick picks: current location, Home, Office · optionally save it as Home / Office
- * Without Google keys there's no map/search: you type the address and we use your phone's GPS position.
+ * "Choose your location" — a delivery-app-style picker on OpenStreetMap (Leaflet + React Leaflet).
+ *   • search an address and press Enter (no autocomplete — Nominatim's policy) → the marker moves there
+ *   • "Use My Current Location" → browser geolocation (high accuracy) + an accuracy circle
+ *   • drag the marker, or tap the map, to the exact door → lat/lng update at once; the address is looked
+ *     up once the marker stops moving
+ *   • optional house / flat no. · optionally save as Home / Office · Confirm Location
+ * Browser location accuracy varies: phones with GPS are usually within metres, laptops often use Wi-Fi and
+ * can be off by 50 m or more — so the accuracy is shown and the marker can always be moved.
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useRef, useState } from "react";
-import { loadGoogleMaps } from "./loader";
-import { newSession, placesApi, shortAddress, type Suggestion } from "./api";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { createPortal } from "react-dom";
+import L from "leaflet";
+import { Circle, MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import { geoApi, shortAddress, type Address, type PlaceHit } from "./api";
 import "./mapPicker.css";
 
 type Coords = { lat: number; lng: number };
 type Saved = { label: string | null; lat: number | null; lng: number | null } | null | undefined;
-export type PickedLocation = { label: string; full: string; coords: Coords; saveAs: "home" | "work" | null };
+export type PickedLocation = {
+  label: string;           // short: "293B New Chauburji Park, Chauburji"
+  full: string;            // full readable address
+  coords: Coords;
+  accuracy: number | null; // metres, when it came from "Use My Current Location"
+  saveAs: "home" | "work" | null;
+};
 
-const LAHORE: Coords = { lat: 31.5204, lng: 74.3587 };
+/** Starting view before any position is known: the city the app covers (Lahore). Not the user's location. */
+const DEFAULT_VIEW = { center: [31.5204, 74.3587] as [number, number], zoom: 12 };
 
-export function MapPicker({ start, gps, askGps, home, work, loggedIn, onClose, onConfirm }: {
-  start?: Coords;          // where the pin starts (my chosen / current position)
-  gps?: Coords;            // live GPS position
-  askGps: () => void;
+// Our own pin (an inline SVG) — avoids Leaflet's default marker images, which bundlers don't resolve.
+const PIN = L.divIcon({
+  className: "mp-leaflet-pin",
+  html: '<svg viewBox="0 0 24 24" width="40" height="40"><path d="M12 22s-7-6.4-7-12a7 7 0 0 1 14 0c0 5.6-7 12-7 12Z" fill="#5b02a5"/><circle cx="12" cy="10" r="2.6" fill="#fff"/></svg>',
+  iconSize: [40, 40],
+  iconAnchor: [20, 38],
+});
+
+function geoError(e: GeolocationPositionError | null): string {
+  if (!e) return "Your browser doesn't support location. Search your address or tap the map instead.";
+  if (e.code === e.PERMISSION_DENIED)
+    return "Location permission was denied. To allow it: click the lock / tune icon left of the address bar → Site settings → Location → Allow, then try again. (Phone: Settings → your browser → Location.) You can also search your address or tap the map.";
+  if (e.code === e.POSITION_UNAVAILABLE)
+    return "Your position isn't available right now (location services may be off). Search your address or tap the map instead.";
+  if (e.code === e.TIMEOUT) return "Finding your location took too long. Try again, or search your address / tap the map.";
+  return "Couldn't get your location. Search your address or tap the map instead.";
+}
+
+/** Map helpers: fly to a target, report taps, and re-measure after the dialog lays out. */
+function FlyTo({ target }: { target: { c: Coords; zoom: number; n: number } | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (target) map.flyTo([target.c.lat, target.c.lng], target.zoom, { duration: 0.6 });
+  }, [target, map]);
+  return null;
+}
+function TapToMove({ onTap }: { onTap: (c: Coords) => void }) {
+  useMapEvents({ click: (e) => onTap({ lat: e.latlng.lat, lng: e.latlng.lng }) });
+  return null;
+}
+function FixSize() {
+  const map = useMap();
+  useEffect(() => {
+    const t = window.setTimeout(() => map.invalidateSize(), 150);
+    return () => window.clearTimeout(t);
+  }, [map]);
+  return null;
+}
+
+export function MapPicker({ start, gps, home, work, loggedIn, onClose, onConfirm }: {
+  start?: Coords;          // where the marker starts (my chosen / last known position)
+  gps?: Coords;            // last known browser position (only a starting point)
+  askGps?: () => void;     // kept for existing callers
   home?: Saved;
   work?: Saved;
   loggedIn: boolean;
   onClose: () => void;
   onConfirm: (p: PickedLocation) => void;
 }) {
-  const [status, setStatus] = useState<{ enabled: boolean; map: boolean } | null>(null);
-  const [pin, setPin] = useState<Coords | null>(start ?? gps ?? null);
-  const [f, setF] = useState({ house: "", street: "", area: "", city: "Lahore" });
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const initial = start ?? gps ?? null;
+  const [pos, setPos] = useState<Coords | null>(initial);
+  const [target, setTarget] = useState<{ c: Coords; zoom: number; n: number } | null>(null);
+  const [accuracy, setAccuracy] = useState<number | null>(null);
+  const [addr, setAddr] = useState<Address | null>(null);
+  const [addrState, setAddrState] = useState<"idle" | "loading" | "none" | "error">("idle");
+  const [locating, setLocating] = useState(false);
   const [q, setQ] = useState("");
-  const [hits, setHits] = useState<Suggestion[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [results, setResults] = useState<Address[]>([]);
+  const [suggest, setSuggest] = useState<PlaceHit[]>([]); // Lahore areas as you type (local list)
+  const [noLocal, setNoLocal] = useState(false);            // typed text matched nothing in the list
+  const suggestSeq = useRef(0);
+  const [msg, setMsg] = useState<{ kind: "err" | "ok"; text: string } | null>(null);
+  // the three address inputs — filled from the map, always editable
+  const [house, setHouse] = useState("");
+  const [street, setStreet] = useState("");      // block or street
+  const [fullAddr, setFullAddr] = useState("");  // full address
   const [saveAs, setSaveAs] = useState<"home" | "work" | null>(null);
-  const mapEl = useRef<HTMLDivElement>(null);
-  const map = useRef<any>(null);
-  const edited = useRef(false); // once the user types, the map stops overwriting the fields
-  const session = useRef(newSession());
-  const lastLookup = useRef("");
+  const lookupTimer = useRef<number | undefined>(undefined);
+  const lookupSeq = useRef(0);
+
+  const goTo = (c: Coords, zoom = 18) => {
+    setPos(c);
+    setTarget({ c, zoom, n: Date.now() });
+  };
+
+  // reverse-geocode once the marker has stopped (debounced; the backend also keeps to 1 request/second)
+  const lookupSoon = (c: Coords, delay = 700) => {
+    window.clearTimeout(lookupTimer.current);
+    setAddrState("loading");
+    lookupTimer.current = window.setTimeout(async () => {
+      const seq = ++lookupSeq.current;
+      try {
+        const a = await geoApi.reverse(c.lat, c.lng);
+        if (seq !== lookupSeq.current) return; // a newer move happened meanwhile
+        setAddr(a);
+        setAddrState("idle");
+        setHouse(a.house_number ?? "");
+        setStreet(a.street ?? a.area ?? "");
+        setFullAddr(a.address);
+      } catch (e) {
+        if (seq !== lookupSeq.current) return;
+        setAddr(null);
+        setAddrState(/no address/i.test(e instanceof Error ? e.message : "") ? "none" : "error");
+      }
+    }, delay);
+  };
 
   useEffect(() => {
-    placesApi.status().then(setStatus);
+    if (initial) lookupSoon(initial, 0);
+    return () => window.clearTimeout(lookupTimer.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // address under the pin -> fields
-  const fillFrom = async (c: Coords) => {
-    if (!status?.enabled) return;
-    const k = `${c.lat.toFixed(5)},${c.lng.toFixed(5)}`;
-    if (k === lastLookup.current) return;
-    lastLookup.current = k;
-    setBusy(true);
-    setErr(null);
-    try {
-      const a = await placesApi.reverse(c.lat, c.lng);
-      if (!edited.current) setF({ house: a.house_number ?? "", street: a.street ?? "", area: a.area ?? "", city: a.city ?? "Lahore" });
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : String(e));
-    } finally {
-      setBusy(false);
+  // marker dragged / map tapped -> coordinates change at once, address after it stops
+  const moveMarker = (c: Coords) => {
+    setPos(c);
+    setAccuracy(null); // a hand-placed marker has no GPS accuracy
+    setHouse("");
+    setStreet("");
+    setFullAddr("");
+    lookupSoon(c);
+  };
+  const moveRef = useRef(moveMarker);
+  moveRef.current = moveMarker;
+  const markerEvents = useMemo(
+    () => ({
+      dragend: (e: L.DragEndEvent) => {
+        const ll = (e.target as L.Marker).getLatLng();
+        moveRef.current({ lat: ll.lat, lng: ll.lng });
+      },
+    }),
+    [],
+  );
+
+  // ---- "Use My Current Location"
+  const useMyLocation = () => {
+    setMsg(null);
+    if (!window.isSecureContext) {
+      return setMsg({ kind: "err", text: "Location only works on https:// or http://localhost. Open the app at http://localhost:5173 or over HTTPS." });
     }
+    if (!("geolocation" in navigator)) return setMsg({ kind: "err", text: geoError(null) });
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        const c = { lat: p.coords.latitude, lng: p.coords.longitude };
+        const acc = Math.round(p.coords.accuracy);
+        setLocating(false);
+        setAccuracy(acc);
+        setHouse("");
+        goTo(c, acc > 300 ? 15 : acc > 80 ? 17 : 18);
+        lookupSoon(c, 0);
+        setMsg({
+          kind: "ok",
+          text: acc > 100
+            ? `Found you, but only to about ±${acc} m (common on laptops using Wi-Fi). Drag the pin to your exact door.`
+            : `Found you (±${acc} m). Drag the pin if it's not exactly on your door.`,
+        });
+      },
+      (e) => {
+        setLocating(false);
+        setMsg({ kind: "err", text: geoError(e) });
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    );
   };
 
-  // map with a fixed centre pin: wherever the map stops, that's the location
+  // ---- Lahore areas as you type (our own list — never the public map service)
   useEffect(() => {
-    if (!status?.map || !mapEl.current) return;
-    let alive = true;
-    (async () => {
-      const key = await placesApi.browserKey();
-      if (!key || !alive) return;
-      try {
-        const gm = await loadGoogleMaps(key);
-        map.current = new gm.Map(mapEl.current, {
-          center: pin ?? LAHORE, zoom: pin ? 18 : 12, disableDefaultUI: true, zoomControl: true,
-          clickableIcons: false, gestureHandling: "greedy",
-        });
-        map.current.addListener("dragstart", () => (edited.current = false));
-        map.current.addListener("idle", () => {
-          const c = map.current.getCenter();
-          const p = { lat: c.lat(), lng: c.lng() };
-          setPin(p);
-          fillFrom(p);
-        });
-      } catch (e) {
-        setErr(e instanceof Error ? e.message : String(e));
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status?.map]);
-
-  // no map, but geocoding works: still read the address at my position
-  useEffect(() => {
-    if (status && !status.map && status.enabled && pin) fillFrom(pin);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
-
-  const moveTo = (c: Coords, zoom = 18) => {
-    edited.current = false;
-    setPin(c);
-    if (map.current) {
-      map.current.panTo(c);
-      map.current.setZoom(zoom);
-    } else {
-      fillFrom(c);
-    }
-  };
-
-  // search as you type (Google suggestions)
-  useEffect(() => {
-    if (!status?.enabled || q.trim().length < 2) return setHits([]);
-    const t = window.setTimeout(async () => {
-      try {
-        setHits(await placesApi.autocomplete(q.trim(), session.current, pin ?? gps ?? undefined));
-      } catch (e) {
-        setErr(e instanceof Error ? e.message : String(e));
-      }
-    }, 250);
+    const text = q.trim();
+    setNoLocal(false);
+    if (text.length < 2 || results.length) return setSuggest([]);
+    const seq = ++suggestSeq.current;
+    const t = window.setTimeout(() => {
+      geoApi.places(text)
+        .then((h) => {
+          if (seq !== suggestSeq.current) return;
+          setSuggest(h);
+          setNoLocal(h.length === 0);
+        })
+        .catch(() => setSuggest([]));
+    }, 120);
     return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, status?.enabled]);
+  }, [q, results.length]);
 
-  const choose = async (s: Suggestion) => {
-    setBusy(true);
+  const pickPlace = (p: PlaceHit) => {
+    setSuggest([]);
+    setNoLocal(false);
+    suggestSeq.current++;
+    setQ(p.name);
+    setResults([]);
+    setAccuracy(null);
+    setHouse("");
+    setStreet(p.name);
+    setFullAddr([p.name, p.area, "Lahore"].filter(Boolean).join(", "));
+    setAddr({ address: p.address, house_number: null, street: null, area: p.name, city: "Lahore", lat: p.lat, lng: p.lng });
+    setAddrState("idle");
+    goTo({ lat: p.lat, lng: p.lng }, 16); // an area, not a door — zoom out a little
+    setMsg({ kind: "ok", text: `Moved to ${p.name}. Now drag the pin (or tap the map) to your exact door.` });
+  };
+
+  // ---- address search (on submit only)
+  const pickResult = (a: Address) => {
+    setResults([]);
+    setSuggest([]);
+    setAccuracy(null);
+    setHouse(a.house_number ?? "");
+    setStreet(a.street ?? a.area ?? "");
+    setFullAddr(a.address);
+    goTo({ lat: a.lat, lng: a.lng });
+    setAddr(a);
+    setAddrState("idle");
+    setMsg({ kind: "ok", text: "Moved the pin to that address — drag it to your exact door if needed." });
+  };
+  const search = async (e: FormEvent) => {
+    e.preventDefault();
+    const text = q.trim();
+    if (text.length < 3) return;
+    setSearching(true);
+    setMsg(null);
+    setResults([]);
+    setSuggest([]);
+    setNoLocal(false);
+    suggestSeq.current++;
     try {
-      const d = await placesApi.details(s.place_id, session.current);
-      session.current = newSession();
-      setHits([]);
-      setQ(s.main);
-      moveTo({ lat: d.lat, lng: d.lng });
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : String(e));
+      const hits = await geoApi.search(text);
+      if (!hits.length) setMsg({ kind: "err", text: "No match on the map for that address. Try the area name (e.g. “Chauburji, Lahore”) or tap the map." });
+      else if (hits.length === 1) pickResult(hits[0]);
+      else setResults(hits);
+    } catch (err) {
+      setMsg({ kind: "err", text: err instanceof Error ? err.message : String(err) });
     } finally {
-      setBusy(false);
+      setSearching(false);
     }
   };
 
-  const useSaved = (s: Saved, fallbackName: string) => {
+  const useSaved = (s: Saved) => {
     if (!s || s.lat == null || s.lng == null) return;
-    moveTo({ lat: s.lat, lng: s.lng });
-    if (!status?.enabled && s.label) {
-      edited.current = true;
-      setF({ house: "", street: s.label, area: "", city: "Lahore" });
-    }
-    void fallbackName;
+    const c = { lat: s.lat, lng: s.lng };
+    setAccuracy(null);
+    goTo(c);
+    lookupSoon(c, 0);
   };
-
-  const set = (k: keyof typeof f) => (e: { target: { value: string } }) => {
-    edited.current = true;
-    setF({ ...f, [k]: e.target.value });
-  };
-
-  // short label for the top bar: house no. + street + area (never just "Lahore")
-  const label = shortAddress({ house_number: f.house || null, street: f.street || null, area: f.area || null, city: f.city || null, address: "" });
-  const full = [f.house && `House ${f.house}`, f.street, f.area, f.city].filter(Boolean).join(", ");
-  const coords = pin ?? gps ?? null;
-  const missing = !coords ? "a position (allow location or move the map)" : !(f.house || f.street) ? "your house no. or street" : !f.area ? "the area" : null;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -172,10 +274,24 @@ export function MapPicker({ start, gps, askGps, home, work, loggedIn, onClose, o
     return () => window.removeEventListener("keydown", onKey, true);
   }, [onClose]);
 
+  // what the user sees + what Confirm saves
+  // full = house + block/street + full address (without repeating what the full address already says)
+  const lowerFull = fullAddr.toLowerCase();
+  const full = [
+    house && !lowerFull.includes(house.toLowerCase()) ? `House ${house}` : null,
+    street && !lowerFull.includes(street.toLowerCase()) ? street : null,
+    fullAddr || null,
+  ].filter(Boolean).join(", ");
+  const label = house || street || fullAddr
+    ? shortAddress({ house_number: house || null, street: street || null, area: addr?.area ?? null, city: addr?.city ?? null, address: fullAddr })
+    : pos ? `${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}` : "";
+
   const hasHome = !!home && home.lat != null;
   const hasWork = !!work && work.lat != null;
 
-  return (
+  // Rendered at the end of <body> (portal): the top bar uses backdrop-filter, which would otherwise trap
+  // this fixed-position window inside the 64px-tall header.
+  return createPortal(
     <div className="mp-scrim" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <section className="mp" role="dialog" aria-label="Choose your location">
         <header className="mp-head">
@@ -183,95 +299,161 @@ export function MapPicker({ start, gps, askGps, home, work, loggedIn, onClose, o
           <button className="mp-x" onClick={onClose} aria-label="Close">✕</button>
         </header>
 
-        {/* search, like Foodpanda */}
-        <div className="mp-search-wrap">
-          <input
-            className="mp-search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder={status?.enabled ? "Search street, area, building or restaurant…" : "Search needs Google — type your address below"}
-            disabled={!status?.enabled}
-            aria-label="Search for an address"
-            autoFocus
-          />
-          {hits.length > 0 && (
-            <ul className="mp-hits" role="listbox">
-              {hits.map((h) => (
-                <li key={h.place_id}>
-                  <button onClick={() => choose(h)}>
-                    <b>{h.main}</b>
-                    {h.secondary && <small>{h.secondary}</small>}
+        {/* search (submit only) */}
+        <form className="mp-search-wrap" onSubmit={search} role="search">
+          <span className="mp-search-box">
+            <input
+              className="mp-search"
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value);
+                if (results.length) setResults([]); // typing again -> back to the as-you-type list
+              }}
+              placeholder="Type an area or address, e.g. DHA Phase 8, Paragon City"
+              onKeyDown={(e) => e.key === "Escape" && suggest.length && (e.stopPropagation(), setSuggest([]))}
+              aria-label="Search for an address"
+              autoFocus
+            />
+            {searching && <span className="mp-spin dark mp-searching" aria-label="Searching…" />}
+            {q && !searching && (
+              <button
+                type="button"
+                className="mp-clear"
+                aria-label="Clear search"
+                onClick={() => {
+                  setQ("");
+                  setResults([]);
+                  setSuggest([]);
+                  setMsg(null);
+                }}
+              >
+                ✕
+              </button>
+            )}
+          </span>
+          {suggest.length > 0 && results.length === 0 && (
+            <ul className="mp-hits" role="listbox" aria-label="Lahore areas">
+              <li className="mp-hits-head">Areas in Lahore</li>
+              {suggest.map((p) => (
+                <li key={p.name}>
+                  <button type="button" onClick={() => pickPlace(p)}>
+                    <b>{p.name}</b>
+                    <small>{[p.area, "Lahore"].filter(Boolean).join(", ")}</small>
+                  </button>
+                </li>
+              ))}
+              <li className="mp-hits-foot">Not listed? Type the full address and press <b>Enter</b>.</li>
+            </ul>
+          )}
+          {suggest.length === 0 && results.length === 0 && !searching && q.trim().length >= 3 && noLocal && (
+            <ul className="mp-hits" role="status">
+              <li className="mp-hits-foot first">No area called “{q.trim()}” in our Lahore list. Press <b>Enter</b> to look up this address on the map.</li>
+            </ul>
+          )}
+          {results.length > 0 && (
+            <ul className="mp-hits" role="listbox" aria-label="Matching places">
+              {results.map((r, i) => (
+                <li key={`${r.lat},${r.lng},${i}`}>
+                  <button type="button" onClick={() => pickResult(r)}>
+                    <b>{shortAddress(r)}</b>
+                    <small>{r.address}</small>
                   </button>
                 </li>
               ))}
             </ul>
           )}
-        </div>
+        </form>
 
         <div className="mp-quick">
-          <button onClick={() => (gps ? moveTo(gps) : askGps())}>◎ {gps ? "Current location" : "Allow current location"}</button>
-          {hasHome && <button onClick={() => useSaved(home, "Home")}>⌂ Home</button>}
-          {hasWork && <button onClick={() => useSaved(work, "Office")}>▣ Office</button>}
+          <button className="mp-addme" onClick={useMyLocation} disabled={locating} aria-busy={locating}>
+            {locating ? <><span className="mp-spin" aria-hidden="true" /> Finding you…</> : "◎ Use My Current Location"}
+          </button>
+          {hasHome && <button onClick={() => useSaved(home)}>⌂ Home</button>}
+          {hasWork && <button onClick={() => useSaved(work)}>▣ Office</button>}
         </div>
 
-        {status?.map ? (
-          <div className="mp-map-wrap">
-            <div ref={mapEl} className="mp-map" />
-            {/* fixed centre pin — move the map underneath it */}
-            <span className="mp-center-pin" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M12 22s-7-6.4-7-12a7 7 0 0 1 14 0c0 5.6-7 12-7 12Z" /><circle cx="12" cy="10" r="2.6" fill="#fff" /></svg>
-            </span>
-            <p className="mp-hint">Move the map to put the pin on your exact door</p>
-          </div>
-        ) : (
-          status && (
-            <p className="mp-note">
-              {status.enabled
-                ? "The map isn't switched on yet (needs a Google Maps browser key). Type your address below — we'll use your phone's GPS position for distances."
-                : "Google Maps isn't set up yet. Type your exact address below — we'll use your phone's GPS position for distances."}
-            </p>
-          )
-        )}
+        {msg && <p className={`mp-msg ${msg.kind}`} role={msg.kind === "err" ? "alert" : "status"}>{msg.text}</p>}
+
+        {/* the map */}
+        <div className="mp-map-wrap">
+          <MapContainer
+            className="mp-map"
+            center={initial ? [initial.lat, initial.lng] : DEFAULT_VIEW.center}
+            zoom={initial ? 17 : DEFAULT_VIEW.zoom}
+            scrollWheelZoom
+          >
+            <TileLayer
+              url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors'
+              maxZoom={19}
+            />
+            <FixSize />
+            <FlyTo target={target} />
+            <TapToMove onTap={(c) => moveRef.current(c)} />
+            {pos && accuracy != null && (
+              <Circle center={[pos.lat, pos.lng]} radius={accuracy}
+                pathOptions={{ color: "#2b6ef2", weight: 1, fillColor: "#2b6ef2", fillOpacity: 0.12 }} />
+            )}
+            {pos && <Marker position={[pos.lat, pos.lng]} draggable icon={PIN} eventHandlers={markerEvents} />}
+          </MapContainer>
+          <p className="mp-hint">{pos ? "Drag the pin or tap the map to adjust" : "Tap the map to drop your pin"}</p>
+        </div>
 
         <div className="mp-body">
-          <p className="mp-under">{busy ? "Finding the address…" : full ? `📍 ${full}` : "Your address will appear here"}</p>
-          <div className="mp-grid">
-            <label className="mp-field"><span>House / flat no.</span>
-              <input value={f.house} onChange={set("house")} placeholder="e.g. 12-B" autoComplete="address-line1" />
+          {/* selected address */}
+          <div className="mp-selected" aria-live="polite">
+            <b>
+              {!pos ? "No location selected yet"
+                : addrState === "loading" ? "Finding the address…"
+                : addr ? full
+                : addrState === "none" ? "No street address found for this spot — the coordinates will be saved."
+                : addrState === "error" ? "Couldn't look up the address right now — the coordinates will be saved."
+                : "—"}
+            </b>
+            {pos && (
+              <span>
+                {pos.lat.toFixed(6)}, {pos.lng.toFixed(6)}
+                {accuracy != null && ` · accurate to about ±${accuracy} m`}
+              </span>
+            )}
+          </div>
+
+          {/* three inputs: house no. · block / street · full address */}
+          <div className="mp-fields">
+            <label className="mp-field"><span>House no.</span>
+              <input value={house} onChange={(e) => setHouse(e.target.value)} placeholder="e.g. 293B" autoComplete="address-line1" />
             </label>
-            <label className="mp-field"><span>Street</span>
-              <input value={f.street} onChange={set("street")} placeholder="e.g. Lake Road" autoComplete="address-line2" />
+            <label className="mp-field"><span>Block / street</span>
+              <input value={street} onChange={(e) => setStreet(e.target.value)} placeholder="e.g. Block C / Lake Road" autoComplete="address-line2" />
             </label>
-            <label className="mp-field"><span>Area / block</span>
-              <input value={f.area} onChange={set("area")} placeholder="e.g. Chauburji" />
-            </label>
-            <label className="mp-field"><span>City</span>
-              <input value={f.city} onChange={set("city")} placeholder="Lahore" autoComplete="address-level2" />
+            <label className="mp-field mp-field-full"><span>Full address</span>
+              <input value={fullAddr} onChange={(e) => setFullAddr(e.target.value)} placeholder="e.g. New Chauburji Park, Lahore" autoComplete="street-address" />
             </label>
           </div>
-          {err && <p className="mp-small err">{err}</p>}
 
+          {/* tag: Home or Office (tap again to remove the tag) */}
           {loggedIn && (
-            <div className="mp-save" role="radiogroup" aria-label="Save this address">
-              <span>Save as</span>
-              {([[null, "Don't save"], ["home", "Home"], ["work", "Office"]] as const).map(([k, t]) => (
-                <button key={t} role="radio" aria-checked={saveAs === k} className={saveAs === k ? "on" : ""} onClick={() => setSaveAs(k)}>{t}</button>
+            <div className="mp-save" role="group" aria-label="Tag this address">
+              <span>Tag</span>
+              {([["home", "⌂ Home"], ["work", "▣ Office"]] as const).map(([k, t]) => (
+                <button key={k} type="button" aria-pressed={saveAs === k} className={saveAs === k ? "on" : ""} onClick={() => setSaveAs(saveAs === k ? null : k)}>{t}</button>
               ))}
             </div>
           )}
         </div>
 
         <footer className="mp-foot">
-          {missing && <span className="mp-small">Add {missing}</span>}
+          {!pos && <span className="mp-small">Pick a spot on the map first</span>}
           <button
             className="mp-btn"
-            disabled={!!missing}
-            onClick={() => coords && onConfirm({ label: label || full, full, coords, saveAs })}
+            disabled={!pos || addrState === "loading" || !(house || street || fullAddr)}
+            onClick={() => pos && onConfirm({ label: label || full, full: full || label, coords: pos, accuracy, saveAs })}
           >
-            Confirm location
+            Confirm Location
           </button>
         </footer>
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }

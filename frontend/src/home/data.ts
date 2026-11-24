@@ -13,6 +13,7 @@ export const BANKS = [
 ];
 
 export const CITIES = ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad", "Multan", "Peshawar", "Other"];
+export const COUNTRIES = ["Pakistan", "United Arab Emirates", "Saudi Arabia", "Qatar", "United Kingdom", "United States", "Canada", "Other"];
 
 export const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 export type Day = (typeof DAYS)[number];

@@ -2,10 +2,14 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent 
 import logo from "../assets/logo.png";
 import { authApi } from "../auth/api";
 import { dashApi, type DashOffer } from "../dashboard/api";
-import { CITIES } from "../home/data";
+import { CITIES, COUNTRIES } from "../home/data";
 import { ALL_BANKS, BANK_CARDS } from "../shared/banks";
 import { type Coords, distanceKm, fmtKm, useMyLocation } from "../shared/geo";
 import { shortAddress, useCurrentAddress } from "../shared/maps/api";
+import { MapPicker } from "../shared/maps/MapPicker";
+import { AddressPicker, type ActiveLoc } from "../dashboard/AddressPicker";
+import { activeLabel, readActive, saveActive } from "../shared/activeLocation";
+import { Branches } from "./Branches";
 import { NotLoggedIn, profileApi, type Place, type Profile as P } from "./api";
 import "./profile.css";
 
@@ -17,6 +21,7 @@ const I = {
   cam: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>,
   back: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>,
   close: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>,
+  logout: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11" /></svg>,
   plate: <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" /></svg>,
 };
 
@@ -39,14 +44,35 @@ function resizeImage(file: File): Promise<string> {
   });
 }
 
+/** Crop a picked photo to a 3:1 banner, 1500 px wide, as JPEG (about 150–300 KB). */
+function resizeCover(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const W = 1500, H = 500;
+      const scale = Math.max(W / img.width, H / img.height);
+      const sw = W / scale, sh = H / scale;
+      const c = document.createElement("canvas");
+      c.width = W;
+      c.height = H;
+      c.getContext("2d")!.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, 0, 0, W, H);
+      URL.revokeObjectURL(img.src);
+      resolve(c.toDataURL("image/jpeg", 0.8));
+    };
+    img.onerror = () => reject(new Error("That file isn't an image we can read."));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 export default function Profile() {
   const [p, setP] = useState<P | null>(null);
   const [offers, setOffers] = useState<DashOffer[]>([]);
   const [toast, setToast] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [branchCount, setBranchCount] = useState<number | null>(null);
   const { loc, ask } = useMyLocation();
 
   useEffect(() => {
-    document.title = "My profile · Discount فرویش";
+    document.title = "Profile";
     profileApi
       .get()
       .then(setP)
@@ -82,40 +108,76 @@ export default function Profile() {
   };
 
   const myAddress = useCurrentAddress(loc.coords);
+  const [active, setActiveState] = useState<ActiveLoc>(readActive);
+  const setActive = (a: ActiveLoc) => {
+    setActiveState(a);
+    saveActive(a);
+  };
   const here = myAddress ? shortAddress(myAddress) : null; // exact address from Google; null = not known
 
   if (!p) {
     return (
       <div className="pf">
-        <TopBar onLogout={logout} />
+        <TopBar />
         <div className="pf-loading">Loading your profile…</div>
       </div>
     );
   }
 
   const name = p.full_name || p.email;
+  const isRest = p.role === "restaurant";
+  const dashHref = "/dashboard"; // same URL for both — it shows restaurants their discount manager
+  const locationButton = isRest ? undefined : (
+    <AddressPicker
+      active={active}
+      label={activeLabel(active, myAddress ? shortAddress(myAddress) : null, loc.status)}
+      onPick={setActive}
+      loc={loc}
+      askLocation={ask}
+      home={p.home}
+      work={p.work}
+      loggedIn
+      onSave={(kind, place) =>
+        run(() => profileApi.update({ [kind]: { label: place.address, lat: place.lat, lng: place.lng } }), `Saved as your ${kind === "home" ? "home" : "office"} address.`)
+      }
+    />
+  );
 
   return (
     <div className="pf">
-      <TopBar onLogout={logout} />
+      <TopBar location={locationButton} home={dashHref} me={{ name: isRest ? p.restaurant_name || name : name, avatar: p.avatar }} />
       <main className="pf-main">
         <div className="pf-crumb-row">
           <nav className="crumbs" aria-label="Breadcrumb">
             <a href="/">Home</a><span aria-hidden="true">/</span>
-            <a href="/dashboard">Dashboard</a><span aria-hidden="true">/</span>
             <span aria-current="page">Profile</span>
           </nav>
-          <a href="/dashboard" className="pf-back">{I.back} Back to deals</a>
+          <a href={dashHref} className="pf-back">{I.back} {isRest ? "Back to my discounts" : "Back to deals"}</a>
         </div>
 
-        <Header p={p} name={name} here={loc.status === "ok" ? here : null} run={run} setToast={setToast} />
+        <Header p={p} name={name} here={loc.status === "ok" ? here : null} run={run} setToast={setToast} branches={branchCount} />
 
-        <div className="pf-grid">
-          <Details p={p} run={run} />
-          <Locations p={p} loc={loc} ask={ask} here={here} run={run} />
-          <Cards p={p} run={run} offers={offers} />
-          <Visits p={p} run={run} />
-        </div>
+        {isRest ? (
+          <div className="pf-grid">
+            <Details p={p} run={run} />
+            <Branches toast={setToast} onCount={setBranchCount} />
+          </div>
+        ) : (
+          <div className="pf-grid">
+            <Details p={p} run={run} />
+            <Locations p={p} loc={loc} ask={ask} here={here} run={run} />
+            <Cards p={p} run={run} offers={offers} />
+            <Visits p={p} run={run} />
+          </div>
+        )}
+
+        <section className="pf-card pf-logout">
+          <div>
+            <h2>Log out</h2>
+            <p className="muted small">Signed in as <b>{p.email}</b>. Logging out ends your session on this device.</p>
+          </div>
+          <button className="pf-btn danger" onClick={logout}>{I.logout} Log out</button>
+        </section>
       </main>
 
       {toast && (
@@ -135,13 +197,21 @@ export default function Profile() {
 
 type Run = (fn: () => Promise<P>, ok?: string) => Promise<boolean>;
 
-function TopBar({ onLogout }: { onLogout: () => void }) {
+/** Same top bar as the dashboard: logo | address | my avatar (Log out is at the bottom of the page). */
+function TopBar({ location, home = "/dashboard", me }: { location?: JSX.Element; home?: string; me?: { name: string; avatar: string | null } }) {
   return (
     <header className="pf-top">
       <div className="pf-top-inner">
-        <a href="/dashboard" className="pf-brand"><img src={logo} alt="Discount فرویش" /></a>
+        <a href={home} className="pf-brand"><img src={logo} alt="Discount فرویش" /></a>
+        {/* same location button as the dashboard */}
+        {location ?? <span />}
         <div className="pf-top-right">
-          <button className="pf-btn ghost" onClick={onLogout}>Log out</button>
+          {me && (
+            <a href="/profile" className="pf-me" title="My profile" aria-current="page">
+              <span className="pf-me-avatar" aria-hidden="true">{me.avatar ? <img src={me.avatar} alt="" /> : me.name.charAt(0).toUpperCase()}</span>
+              <b className="pf-me-name">{me.name}</b>
+            </a>
+          )}
         </div>
       </div>
     </header>
@@ -150,10 +220,27 @@ function TopBar({ onLogout }: { onLogout: () => void }) {
 
 // ---------------------------------------------------------------- header: photo + name
 
-function Header({ p, name, here, run, setToast }: {
+function Header({ p, name, here, run, setToast, branches }: {
   p: P; name: string; here: string | null; run: Run; setToast: (t: { kind: "ok" | "err"; text: string }) => void;
+  branches?: number | null;
 }) {
+  const isRest = p.role === "restaurant";
   const fileRef = useRef<HTMLInputElement>(null);
+  const coverRef = useRef<HTMLInputElement>(null);
+  const [coverBusy, setCoverBusy] = useState(false);
+  const onCover = async (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    setCoverBusy(true);
+    try {
+      const cover = await resizeCover(f);
+      await run(() => profileApi.update({ cover }), "Cover photo updated.");
+    } catch (err) {
+      setToast({ kind: "err", text: err instanceof Error ? err.message : String(err) });
+    }
+    setCoverBusy(false);
+  };
   const menuRef = useRef<HTMLDivElement>(null);
   const [menu, setMenu] = useState(false);
   const [viewing, setViewing] = useState(false);
@@ -174,31 +261,47 @@ function Header({ p, name, here, run, setToast }: {
     if (!f) return;
     try {
       const avatar = await resizeImage(f);
-      await run(() => profileApi.update({ avatar }), "Profile picture updated.");
+      await run(() => profileApi.update({ avatar }), isRest ? "Logo updated." : "Profile picture updated.");
     } catch (err) {
       setToast({ kind: "err", text: err instanceof Error ? err.message : String(err) });
     }
   };
   return (
-    <section className="pf-card pf-header">
+    <section className={`pf-card pf-header ${isRest ? "rest" : ""}`}>
+      {isRest && (
+        <div className={`pf-cover ${p.cover ? "" : "empty"}`} style={p.cover ? { backgroundImage: `url(${p.cover})` } : undefined}>
+          {!p.cover && <span className="pf-cover-hint">Add a cover photo of your restaurant — food, the dining room or the front.</span>}
+          <div className="pf-cover-btns">
+            <button className="pf-cover-btn" onClick={() => coverRef.current?.click()} disabled={coverBusy}>
+              {I.cam} {coverBusy ? "Uploading…" : p.cover ? "Change cover" : "Add cover photo"}
+            </button>
+            {p.cover && (
+              <button className="pf-cover-btn" onClick={() => window.confirm("Remove the cover photo?") && run(() => profileApi.update({ cover: null }), "Cover photo removed.")}>
+                Remove
+              </button>
+            )}
+          </div>
+          <input ref={coverRef} type="file" accept="image/*" hidden onChange={onCover} />
+        </div>
+      )}
       <div className="pf-avatar-wrap" ref={menuRef}>
         <button
           className="pf-avatar"
           onClick={() => (p.avatar ? setMenu(!menu) : fileRef.current?.click())}
           aria-haspopup={p.avatar ? "menu" : undefined}
           aria-expanded={p.avatar ? menu : undefined}
-          aria-label={p.avatar ? "Profile picture options" : "Add a profile picture"}
-          title={p.avatar ? "Profile picture options" : "Add a profile picture"}
+          aria-label={p.avatar ? (isRest ? "Logo options" : "Profile picture options") : isRest ? "Add your restaurant's logo" : "Add a profile picture"}
+          title={p.avatar ? (isRest ? "Logo options" : "Profile picture options") : isRest ? "Add your restaurant's logo" : "Add a profile picture"}
         >
-          {p.avatar ? <img src={p.avatar} alt="" /> : <span>{name.charAt(0).toUpperCase()}</span>}
+          {p.avatar ? <img src={p.avatar} alt="" /> : <span>{(isRest ? p.restaurant_name || name : name).charAt(0).toUpperCase()}</span>}
           <span className="pf-avatar-hover" aria-hidden="true">{I.cam}</span>
         </button>
         {menu && (
           <div className="pf-avatar-menu" role="menu">
-            <button role="menuitem" onClick={() => { setMenu(false); setViewing(true); }}>View picture</button>
-            <button role="menuitem" onClick={() => { setMenu(false); fileRef.current?.click(); }}>Change picture</button>
-            <button role="menuitem" className="danger" onClick={() => { setMenu(false); run(() => profileApi.update({ avatar: null }), "Picture deleted."); }}>
-              Delete picture
+            <button role="menuitem" onClick={() => { setMenu(false); setViewing(true); }}>{isRest ? "View logo" : "View picture"}</button>
+            <button role="menuitem" onClick={() => { setMenu(false); fileRef.current?.click(); }}>{isRest ? "Change logo" : "Change picture"}</button>
+            <button role="menuitem" className="danger" onClick={() => { setMenu(false); run(() => profileApi.update({ avatar: null }), isRest ? "Logo deleted." : "Picture deleted."); }}>
+              {isRest ? "Delete logo" : "Delete picture"}
             </button>
           </div>
         )}
@@ -211,16 +314,26 @@ function Header({ p, name, here, run, setToast }: {
         </div>
       )}
       <div className="pf-header-text">
-        <h1>{name}</h1>
-        <p className="muted">{p.email}</p>
-        <p className="pf-here">
-          {I.pin}
-          {here ? <>You're in <b>{here}</b></> : "Current location not shared"}
-        </p>
+        <h1>{isRest ? p.restaurant_name || name : name}</h1>
+        {isRest && <p className="pf-role">Restaurant account · {name}</p>}
+        {isRest && !p.avatar && <p className="muted small">Tap the circle to add your logo.</p>}
+        <p className="muted pf-email" title={p.email}>{p.email}</p>
       </div>
+      {!isRest && (
+        <p className="pf-here" title={here ? `You're in ${here}` : undefined}>
+          {I.pin}
+          <span>{here ? <>You're in <b>{here}</b></> : "Current location not shared"}</span>
+        </p>
+      )}
       <dl className="pf-stats">
-        <div><dt>Cards</dt><dd>{p.cards.length}</dd></div>
-        <div><dt>Places visited</dt><dd>{p.visits.length}</dd></div>
+        {isRest ? (
+          <div><dt>Branches</dt><dd>{branches ?? "–"}</dd></div>
+        ) : (
+          <>
+            <div><dt>Cards</dt><dd>{p.cards.length}</dd></div>
+            <div><dt>Places visited</dt><dd>{p.visits.length}</dd></div>
+          </>
+        )}
         <div><dt>Member since</dt><dd className="sm">{fmtDate(p.member_since)}</dd></div>
       </dl>
     </section>
@@ -230,17 +343,30 @@ function Header({ p, name, here, run, setToast }: {
 // ---------------------------------------------------------------- personal details
 
 function Details({ p, run }: { p: P; run: Run }) {
-  const [f, setF] = useState({ full_name: p.full_name ?? "", phone: p.phone ?? "", city: p.city ?? "" });
-  const dirty = f.full_name !== (p.full_name ?? "") || f.phone !== (p.phone ?? "") || f.city !== (p.city ?? "");
+  const isRest = p.role === "restaurant";
+  const [f, setF] = useState({ full_name: p.full_name ?? "", phone: p.phone ?? "", city: p.city ?? "", country: p.country ?? "", restaurant_name: p.restaurant_name ?? "" });
+  const dirty = f.full_name !== (p.full_name ?? "") || f.phone !== (p.phone ?? "") || f.city !== (p.city ?? "") || f.country !== (p.country ?? "") ||
+    (isRest && f.restaurant_name !== (p.restaurant_name ?? ""));
   const save = (e: FormEvent) => {
     e.preventDefault();
-    run(() => profileApi.update({ full_name: f.full_name, phone: f.phone || null, city: f.city || null }), "Details saved.");
+    run(
+      () => profileApi.update({
+        full_name: f.full_name, phone: f.phone || null, city: f.city || null, country: f.country || null,
+        ...(isRest ? { restaurant_name: f.restaurant_name } : {}),
+      }),
+      "Details saved.",
+    );
   };
   return (
     <section className="pf-card">
-      <h2>Personal details</h2>
+      <h2>{isRest ? "Restaurant details" : "Personal details"}</h2>
       <form className="pf-form" onSubmit={save}>
-        <label className="pf-field"><span>Full name</span>
+        {isRest && (
+          <label className="pf-field"><span>Restaurant name</span>
+            <input value={f.restaurant_name} onChange={(e) => setF({ ...f, restaurant_name: e.target.value })} required minLength={2} maxLength={200} />
+          </label>
+        )}
+        <label className="pf-field"><span>{isRest ? "Owner / manager name" : "Full name"}</span>
           <input value={f.full_name} onChange={(e) => setF({ ...f, full_name: e.target.value })} required minLength={2} />
         </label>
         <label className="pf-field"><span>Email</span>
@@ -257,6 +383,12 @@ function Details({ p, run }: { p: P; run: Run }) {
             </select>
           </label>
         </div>
+        <label className="pf-field"><span>Country</span>
+          <select value={f.country} onChange={(e) => setF({ ...f, country: e.target.value })}>
+            <option value="">Select country</option>
+            {COUNTRIES.map((c) => <option key={c}>{c}</option>)}
+          </select>
+        </label>
         <div className="pf-form-foot">
           <button className="pf-btn" disabled={!dirty}>Save details</button>
         </div>
@@ -289,81 +421,54 @@ function Locations({ p, loc, ask, here, run }: {
         </div>
         {loc.status === "denied" && <button className="pf-btn small ghost" onClick={ask}>Try again</button>}
       </div>
-      <SavedPlace kind="home" icon={I.home} title="Home" place={p.home} me={loc.coords} hereLabel={here} run={run} />
-      <SavedPlace kind="work" icon={I.work} title="Work" place={p.work} me={loc.coords} hereLabel={here} run={run} />
+      <SavedPlace kind="home" icon={I.home} title="Home" place={p.home} me={loc.coords} askGps={ask} run={run} />
+      <SavedPlace kind="work" icon={I.work} title="Office" place={p.work} me={loc.coords} askGps={ask} run={run} />
     </section>
   );
 }
 
-function SavedPlace({ kind, icon, title, place, me, hereLabel, run }: {
-  kind: "home" | "work"; icon: JSX.Element; title: string; place: Place; me?: Coords; hereLabel: string | null; run: Run;
+function SavedPlace({ kind, icon, title, place, me, askGps, run }: {
+  kind: "home" | "work"; icon: JSX.Element; title: string; place: Place; me?: Coords; askGps: () => void; run: Run;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [label, setLabel] = useState(place.label ?? "");
-  const [coords, setCoords] = useState<Coords | null>(place.lat != null && place.lng != null ? { lat: place.lat, lng: place.lng } : null);
-  const saved = place.label || place.lat != null;
-  const km = me && place.lat != null && place.lng != null ? distanceKm(me, place.lat, place.lng) : null;
-
-  const start = () => {
-    setLabel(place.label ?? "");
-    setCoords(place.lat != null && place.lng != null ? { lat: place.lat, lng: place.lng } : null);
-    setEditing(true);
-  };
-  const save = async (e: FormEvent) => {
-    e.preventDefault();
-    const ok = await run(
-      () => profileApi.update({ [kind]: { label: label || null, lat: coords?.lat ?? null, lng: coords?.lng ?? null } }),
-      `${title} saved.`,
-    );
-    if (ok) setEditing(false);
-  };
+  const [picking, setPicking] = useState(false);
+  const pinned = place.lat != null && place.lng != null ? { lat: place.lat, lng: place.lng } : undefined;
+  const saved = place.label || pinned;
 
   return (
     <div className="pf-place">
       <span className="pf-place-icon">{icon}</span>
-      {editing ? (
-        <form className="pf-place-body pf-place-form" onSubmit={save}>
-          <b>{title}</b>
-          <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder={`e.g. ${kind === "home" ? "House 12, Block C, Model Town" : "Office, Gulberg III"}`} autoFocus />
-          <div className="pf-place-actions">
-            <button
-              type="button"
-              className="pf-btn small ghost"
-              disabled={!me}
-              title={me ? undefined : "Allow location first"}
-              onClick={() => {
-                if (!me) return;
-                setCoords(me);
-                if (!label && hereLabel) setLabel(hereLabel);
-              }}
-            >
-              {I.pin} {coords ? "Re-pin to where I am" : "Pin to where I am now"}
-            </button>
-            {coords && <span className="muted small">Pinned · {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}</span>}
-          </div>
-          <div className="pf-place-actions">
-            <button className="pf-btn small" disabled={!label && !coords}>Save</button>
-            <button type="button" className="pf-btn small ghost" onClick={() => setEditing(false)}>Cancel</button>
-          </div>
-        </form>
-      ) : (
-        <>
-          <div className="pf-place-body">
-            <b>{title}</b>
-            <span className="muted">
-              {saved ? place.label || "Pinned on map" : `Add your ${kind} address to see deals near it.`}
-              {km != null && <> · <b className="pf-km">{fmtKm(km)} from you</b></>}
-            </span>
-          </div>
-          <div className="pf-place-btns">
-            <button className="pf-btn small ghost" onClick={start}>{saved ? "Edit" : "Add"}</button>
-            {saved && (
-              <button className="pf-icon-btn" aria-label={`Remove ${kind}`} onClick={() => run(() => profileApi.update({ [kind]: null }), `${title} removed.`)}>
-                {I.close}
-              </button>
-            )}
-          </div>
-        </>
+      <div className="pf-place-body">
+        <b>{title}</b>
+        <span className="muted">
+          {saved ? place.label || "Pinned on map" : `Add your ${kind === "home" ? "home" : "office"} location to see deals near it.`}
+          {saved && !pinned && <> · <b className="pf-warn">not pinned on the map yet</b></>}
+        </span>
+      </div>
+      <div className="pf-place-btns">
+        <button className="pf-btn small ghost" onClick={() => setPicking(true)}>{I.pin} {saved ? "Change" : "Set on map"}</button>
+        {saved && (
+          <button className="pf-icon-btn" aria-label={`Remove ${title}`} onClick={() => run(() => profileApi.update({ [kind]: null }), `${title} removed.`)}>
+            {I.close}
+          </button>
+        )}
+      </div>
+
+      {/* same location picker as the top bar: search, "Add my location", move the map, house no. */}
+      {picking && (
+        <MapPicker
+          start={pinned ?? me}
+          gps={me}
+          askGps={askGps}
+          loggedIn={false}
+          onClose={() => setPicking(false)}
+          onConfirm={async (pick) => {
+            const ok = await run(
+              () => profileApi.update({ [kind]: { label: pick.full || pick.label, lat: pick.coords.lat, lng: pick.coords.lng } }),
+              `${title} location saved.`,
+            );
+            if (ok) setPicking(false);
+          }}
+        />
       )}
     </div>
   );

@@ -14,9 +14,10 @@ import secrets
 import time
 from collections import defaultdict, deque
 from datetime import datetime, timedelta, timezone
+from typing import Literal
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator
 from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -112,6 +113,20 @@ class SignupIn(BaseModel):
     password: str = Field(min_length=8, max_length=200)
     phone: str | None = Field(default=None, max_length=30)
     city: str | None = Field(default=None, max_length=80)
+    country: str | None = Field(default="Pakistan", max_length=80)
+    role: Literal["client", "restaurant"] = "client"  # an admin can't be made by signing up
+    restaurant_name: str | None = Field(default=None, max_length=200)
+
+    @model_validator(mode="after")
+    def _restaurant_fields(self):
+        if self.role == "restaurant":
+            if len((self.restaurant_name or "").strip()) < 2:
+                raise ValueError("Please enter your restaurant's name.")
+            if len((self.phone or "").strip()) < 7:
+                raise ValueError("Please enter a phone number we can reach the restaurant on.")
+        else:
+            self.restaurant_name = None
+        return self
 
 
 class LoginIn(BaseModel):
@@ -125,11 +140,15 @@ class Me(BaseModel):
     full_name: str | None
     phone: str | None
     city: str | None
+    country: str | None = None
     avatar: str | None = None
+    role: str = "client"
+    restaurant_name: str | None = None
 
 
 def _me(u: User) -> Me:
-    return Me(id=u.id, email=u.email, full_name=u.full_name, phone=u.phone, city=u.city, avatar=u.avatar)
+    return Me(id=u.id, email=u.email, full_name=u.full_name, phone=u.phone, city=u.city, country=u.country, avatar=u.avatar,
+              role=u.role, restaurant_name=u.restaurant_name)
 
 
 async def current_user(
@@ -140,7 +159,7 @@ async def current_user(
     now = datetime.now(timezone.utc)
     row = await session.scalar(select(UserSession).where(UserSession.token_hash == _hash_token(df_session)))
     user = await session.get(User, row.user_id) if row and row.expires_at > now else None
-    if not user or not user.is_active:
+    if not user or not user.is_active or user.role == "admin":
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not logged in")
     if now - row.last_seen_at > timedelta(hours=1):  # don't write on every request
         row.last_seen_at = now
@@ -158,7 +177,9 @@ async def signup(body: SignupIn, request: Request, resp: Response,
     if await session.scalar(select(User.id).where(func.lower(User.email) == email)):
         raise taken
     user = User(email=email, full_name=body.full_name.strip(), phone=(body.phone or "").strip() or None,
-                city=(body.city or "").strip() or None, password_hash=hash_password(body.password))
+                city=(body.city or "").strip() or None, password_hash=hash_password(body.password),
+                country=(body.country or "").strip() or None,
+                role=body.role, restaurant_name=(body.restaurant_name or "").strip() or None)
     session.add(user)
     try:
         await session.commit()  # the account is saved in the users table here
@@ -177,7 +198,7 @@ async def login(body: LoginIn, request: Request, resp: Response,
     _check_limits(email, ip)
     user = await session.scalar(select(User).where(func.lower(User.email) == email))
     ok = verify_password(body.password, user.password_hash if user else _DUMMY_HASH)
-    if not user or not ok or not user.is_active:
+    if not user or not ok or not user.is_active or user.role == "admin":  # the admin logs in on the admin app only
         _record_fail(email, ip)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Wrong email or password.")
     _fails.pop("e:" + email, None)

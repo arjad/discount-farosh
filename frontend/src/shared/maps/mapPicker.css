@@ -15,17 +15,48 @@
 .mp-head b { font-size: 16px; }
 .mp-x { width: 32px; height: 32px; border: 0; border-radius: 8px; background: none; cursor: pointer; color: #8e8a96; }
 .mp-x:hover { background: #f3f2f6; color: #1c1a22; }
-.mp-search-wrap { position: relative; padding: 12px 18px 0; }
+.mp-search-wrap { position: relative; padding: 12px 18px 0; display: flex; gap: 8px; }
+.mp-search-box { position: relative; flex: 1; min-width: 0; display: flex; }
+.mp-search-box .mp-search { padding-right: 38px; }
+.mp-scrim .mp-clear {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 28px; height: 28px; border: 0; border-radius: 50%; display: grid; place-items: center;
+  background: #eeedf2; color: #64606c; font-size: 12px; cursor: pointer;
+}
+.mp-scrim .mp-clear:hover { background: #e2e0e8; color: #1c1a22; }
+.mp-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mp-field-full { grid-column: 1 / -1; }
+.mp-search-btn { flex: none; height: 44px; min-width: 84px; padding: 0 14px; border-radius: 12px; border: 1px solid #5b02a5; background: #fff; color: #5b02a5; font-weight: 700; cursor: pointer; display: grid; place-items: center; }
+.mp-search-btn:hover:not(:disabled) { background: #f6f0fc; }
+.mp-search-btn:disabled { opacity: 0.5; cursor: default; }
+.mp-msg { margin: 10px 18px 0; padding: 9px 12px; border-radius: 10px; font-size: 13px; }
+.mp-msg.err { background: #fdf1f2; color: #a3242a; border: 1px solid #f4cfd2; }
+.mp-msg.ok { background: #f6f0fc; color: #470182; border: 1px solid #e5d5f5; }
+.mp-selected { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: 10px; background: #f6f5f8; }
+.mp-selected b { font-size: 13.5px; }
+.mp-selected span { font-size: 12px; color: #64606c; }
+.mp-leaflet-pin { background: none; border: 0; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3)); }
+.mp-spin.dark { border-color: rgba(91, 2, 165, 0.25); border-top-color: #5b02a5; }
+.mp-map-wrap .leaflet-container { font: inherit; }
 .mp-search { width: 100%; height: 44px; padding: 0 14px; border: 1px solid #e7e5ec; border-radius: 12px; background: #fbfbfd; outline: none; }
 .mp-search:focus { border-color: #5b02a5; background: #fff; }
 .mp-search:disabled { opacity: 0.7; }
-.mp-hits { position: absolute; left: 18px; right: 18px; top: calc(100% + 4px); z-index: 5; list-style: none; margin: 0; padding: 6px; background: #fff; border-radius: 12px; box-shadow: 0 12px 36px rgba(20, 16, 30, 0.18); max-height: 280px; overflow-y: auto; }
+.mp-hits { position: absolute; left: 18px; right: 18px; top: calc(100% + 4px); z-index: 1000; list-style: none; margin: 0; padding: 6px; background: #fff; border-radius: 12px; box-shadow: 0 12px 36px rgba(20, 16, 30, 0.18); max-height: 280px; overflow-y: auto; }
 .mp-hits button { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 9px 10px; border: 0; border-radius: 8px; background: none; text-align: left; cursor: pointer; }
 .mp-hits button:hover { background: #f6f0fc; }
 .mp-hits small { color: #8e8a96; font-size: 12px; }
 .mp-quick { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 18px 0; }
 .mp-quick button { height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid #e5d5f5; background: #fff; color: #5b02a5; font-weight: 700; font-size: 12.5px; cursor: pointer; }
 .mp-quick button:hover { background: #f6f0fc; }
+.mp-quick .mp-addme { background: #5b02a5; color: #fff; border-color: #5b02a5; display: inline-flex; align-items: center; gap: 6px; }
+.mp-quick .mp-addme:hover:not(:disabled) { background: #470182; }
+.mp-quick .mp-addme:disabled { opacity: 0.85; cursor: progress; }
+.mp-spin { width: 13px; height: 13px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.4); border-top-color: #fff; animation: mp-spin 0.8s linear infinite; }
+@keyframes mp-spin { to { transform: rotate(360deg); } }
+.mp-fix { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; background: #eef4ff; border: 1px solid #d6e3ff; }
+.mp-fix b { font-size: 13.5px; }
+.mp-fix span { font-size: 12px; color: #3b4a6b; }
+.mp-fix .warn { color: #8a5a00; }
 .mp-map-wrap { position: relative; margin-top: 12px; }
 .mp-center-pin { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; transform: translate(-50%, -100%); pointer-events: none; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.3)); }
 .mp-center-pin svg { width: 100%; height: 100%; fill: #5b02a5; }
@@ -34,14 +65,15 @@
 .mp-save > span { font-size: 12px; font-weight: 600; color: #64606c; margin-right: 2px; }
 .mp-save button { height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid #e7e5ec; background: #fff; font-size: 12.5px; font-weight: 600; color: #64606c; cursor: pointer; }
 .mp-save button.on { border-color: #5b02a5; background: #f6f0fc; color: #5b02a5; }
-.mp-map { width: 100%; height: 300px; background: #eeedf2; }
-.mp-hint { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); margin: 0; padding: 6px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.95); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.mp-map { width: 100%; height: 360px; background: #eeedf2; }
+.mp-hint { position: absolute; z-index: 500; pointer-events: none; left: 50%; bottom: 10px; transform: translateX(-50%); margin: 0; padding: 6px 12px; border-radius: 999px; background: rgba(255, 255, 255, 0.95); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); font-size: 12.5px; font-weight: 600; white-space: nowrap; }
 .mp-note { margin: 14px 18px 0; padding: 10px 12px; border-radius: 10px; background: #fff8db; color: #6b4f00; font-size: 13px; }
 .mp-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
 .mp-gps { align-self: flex-start; height: 34px; padding: 0 12px; border-radius: 9px; border: 1px solid #e5d5f5; background: #fff; color: #5b02a5; font-weight: 700; cursor: pointer; }
 .mp-gps:hover { background: #f6f0fc; }
 .mp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .mp-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.mp-house { max-width: 220px; }
 .mp-field span { font-size: 12px; font-weight: 600; color: #64606c; }
 .mp-field input { height: 40px; padding: 0 12px; border: 1px solid #e7e5ec; border-radius: 10px; background: #fbfbfd; outline: none; min-width: 0; }
 .mp-field input:focus { border-color: #5b02a5; background: #fff; }
@@ -56,5 +88,25 @@
 .mp-btn.ghost { background: #fff; color: #5b02a5; border-color: #e5d5f5; }
 @media (max-width: 480px) {
   .mp-grid { grid-template-columns: 1fr; }
-  .mp-map { height: 240px; }
+  .mp-map { height: 52vh; min-height: 260px; }
 }
+
+/* text colours that must win over the generic `.mp-scrim button { color: inherit }` */
+.mp-scrim .mp-search-btn { color: #5b02a5; font-weight: 800; }
+.mp-scrim .mp-btn { color: #fff; }
+.mp-scrim .mp-btn.ghost { color: #5b02a5; }
+@media (max-width: 480px) {
+  .mp-fields { grid-template-columns: 1fr; }
+}
+.mp-scrim .mp-quick .mp-addme { color: #fff; }
+
+/* "Areas in Lahore" suggestions while typing */
+.mp-scrim .mp-hits-head { padding: 6px 10px 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #8e8a96; }
+.mp-scrim .mp-hits-foot { padding: 8px 10px 4px; border-top: 1px solid #f0eff3; margin-top: 4px; font-size: 12px; color: #8e8a96; }
+
+/* no Search button any more: the field takes the full width, a spinner shows while Enter-search runs */
+.mp-scrim .mp-searching { position: absolute; right: 12px; top: 50%; margin-top: -7px; }
+.mp-scrim .mp-hits-foot.first { border-top: 0; margin-top: 0; padding: 10px; }
+
+/* the suggestions list sits above the map (Leaflet zoom buttons are z-index 1000) */
+.mp-scrim .mp-hits { z-index: 1200; }

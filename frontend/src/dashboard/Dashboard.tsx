@@ -12,6 +12,8 @@ import { shortAddress, useCurrentAddress } from "../shared/maps/api";
 import { authApi, type Me } from "../auth/api";
 import { profileApi, type Profile } from "../profile/api";
 import { AddressPicker, type ActiveLoc } from "./AddressPicker";
+import { recordViews, saveFavourite } from "../shared/views";
+import { ACTIVE_KEY, readActive } from "../shared/activeLocation";
 import { ChatBot, SHARED_HELPERS } from "./ChatBot";
 import { openStatus, weekRows, type OpenStatus } from "../shared/hours";
 import { areaOf, OTHER_AREA } from "../shared/areas";
@@ -85,6 +87,7 @@ type Filters = {
   offCards: number[]; // ids of my saved cards I've switched off (all of them are on by default)
   openState: "any" | "open" | "closed";
   favsOnly: boolean; // only deals I've hearted
+  maxKm: 0 | 5 | 10 | 15; // only restaurants within this many km of my location (0 = any distance)
   areas: string[]; // neighbourhoods, e.g. "Gulberg", "DHA" — a deal matches if any branch is there // open right now (Pakistan time), by the branch shown on the card
   banks: string[];
   cards: string[];
@@ -95,7 +98,7 @@ type Filters = {
   minDiscount: number;
   sort: Sort;
 };
-const EMPTY: Filters = { q: "", offCards: [], openState: "any", favsOnly: false, areas: [], banks: [], cards: [], places: [], categories: [], days: [], city: "", minDiscount: 0, sort: "discount" };
+const EMPTY: Filters = { q: "", offCards: [], openState: "any", favsOnly: false, maxKm: 0, areas: [], banks: [], cards: [], places: [], categories: [], days: [], city: "", minDiscount: 0, sort: "discount" };
 
 const toggleId = (list: number[], v: number) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
@@ -103,7 +106,9 @@ const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x
 /** An offer works with my cards if one of its cards matches a saved card — or it lists no cards
  *  (= any card of that bank) and I have a card from that bank. */
 const worksWithMyCards = (o: DashOffer, mine: UserCard[]) =>
-  o.cards.length
+  o.bank.slug === "direct" // a restaurant's own deal for everyone — no card needed
+    ? true
+    : o.cards.length
     ? o.cards.some((c) => mine.some((m) => cardMatches(m, o.bank.slug, c.name)))
     : mine.some((m) => m.bank_slug === o.bank.slug);
 
@@ -115,6 +120,11 @@ function applyFilters(offers: DashOffer[], f: Filters, me?: Coords, myCards: Use
   const q = f.q.trim().toLowerCase();
   const out = offers.filter((o) => {
     if (f.favsOnly && !favs.includes(o.id)) return false;
+    if (f.maxKm && me) {
+      // nearest branch must be within range; branches without map coordinates can't be checked
+      const km = nearestBranch(o, me).km;
+      if (km == null || km > f.maxKm) return false;
+    }
     if (f.openState !== "any" && isOpenNow(o, me, now) !== (f.openState === "open")) return false;
     if (myCards.length && !worksWithMyCards(o, myCards)) return false;
     if (q && !`${o.title} ${placeName(o)} ${o.bank.name} ${o.description ?? ""}`.toLowerCase().includes(q)) return false;
@@ -164,17 +174,7 @@ function groupByPlace(list: DashOffer[]) {
 /** TEMPORARY: the "Sync now" button is hidden. Set to true to bring it back (or delete it for good). */
 const SHOW_SYNC_BUTTON = false;
 
-export const ACTIVE_KEY = "df:active-location";
-/** The address picked in the top bar is remembered in this browser (shared with the restaurant pages). */
-export function readActive(): ActiveLoc {
-  try {
-    const a = JSON.parse(localStorage.getItem(ACTIVE_KEY) ?? "null");
-    if (a && ["home", "work", "search"].includes(a.source) && typeof a.coords?.lat === "number" && typeof a.label === "string") return a;
-  } catch {
-    /* ignore */
-  }
-  return { source: "current" };
-}
+export { ACTIVE_KEY, readActive } from "../shared/activeLocation"; // used by the restaurant page
 
 
 /** How many restaurants (or offers) are shown at once; more are added as you scroll. */
@@ -442,6 +442,7 @@ export default function Dashboard() {
     setSelected(o);
     setFocusOfferId(offerId);
     const all = restaurantOffers(o);
+    recordViews(offerId ? [offerId] : all.map((x) => x.id), "sidebar");
     const target = offerId ? all.find((x) => x.id === offerId) ?? o : o;
     go(offerId ? offerPath(target, placeName(o), all, "/dashboard") : restaurantPath(placeName(o), all.length ? all : [o], "/dashboard"));
   };
@@ -468,6 +469,7 @@ export default function Dashboard() {
       setToast({ kind: "warn", text: "That offer has expired or isn't available — here are the restaurant's current offers." });
     setSelected(hit.offers[0]);
     setFocusOfferId(hit.focus);
+    recordViews(hit.focus != null ? [hit.focus] : hit.offers.map((x) => x.id), "link");
   }, [data]);
   useEffect(() => {
     applyPath();
@@ -505,7 +507,7 @@ export default function Dashboard() {
       : `${active.source === "home" ? "Home · " : active.source === "work" ? "Office · " : ""}${active.label}`;
   const activeCount =
     filters.banks.length + filters.cards.length + filters.places.length + filters.categories.length +
-    (filters.favsOnly ? 1 : 0) + (filters.openState !== "any" ? 1 : 0) + filters.areas.length + filters.days.length + (filters.city ? 1 : 0) + (filters.minDiscount ? 1 : 0) + (filters.q ? 1 : 0) +
+    (filters.favsOnly ? 1 : 0) + (filters.maxKm && origin ? 1 : 0) + (filters.openState !== "any" ? 1 : 0) + filters.areas.length + filters.days.length + (filters.city ? 1 : 0) + (filters.minDiscount ? 1 : 0) + (filters.q ? 1 : 0) +
     (selectedCards.length ? 1 : 0);
   // would anything show if my cards weren't limiting the list?
   const hiddenByCards = useMemo(
@@ -519,8 +521,7 @@ export default function Dashboard() {
       <header className="dash-top">
         <div className="dash-top-inner">
         <a href="/" className="dash-brand">
-          <img src={logo} alt="" />
-          <span>Deals dashboard</span>
+          <img src={logo} alt="Discount فرویش" />
         </a>
         <AddressPicker
           active={active}
@@ -542,10 +543,6 @@ export default function Dashboard() {
               </span>
               <span className="dash-user-text">
                 <b className="dash-user-name">{me.full_name || me.email}</b>
-                <small className="dash-user-loc">
-                  {I.pin}
-                  {addressLabel}
-                </small>
               </span>
             </a>
           ) : (
@@ -719,6 +716,7 @@ export default function Dashboard() {
                 <OfferCard
                   key={g.key}
                   o={g.offers[0]}
+                  count={1}
                   onOpen={() => openPlace(g.offers[0])}
                   active={selected?.id === g.offers[0].id}
                   fav={favs.includes(g.offers[0].id)}
@@ -806,6 +804,19 @@ function FilterPanel({
   loading: boolean;
   favCount: number;
 }) {
+  // deals within 5 / 10 / 15 km of my location
+  const kmCounts = useMemo(() => {
+    const c = { 0: offers.length, 5: 0, 10: 0, 15: 0 } as Record<0 | 5 | 10 | 15, number>;
+    if (!origin) return c;
+    for (const o of offers) {
+      const km = nearestBranch(o, origin).km;
+      if (km == null) continue;
+      if (km <= 5) c[5]++;
+      if (km <= 10) c[10]++;
+      if (km <= 15) c[15]++;
+    }
+    return c;
+  }, [offers, origin]);
   const openCounts = useMemo(() => {
     let open = 0;
     let closed = 0;
@@ -873,12 +884,36 @@ function FilterPanel({
         <section>
           <h3>Favourites</h3>
           <Check label="Only my favourites ♥" count={favCount} on={filters.favsOnly} onChange={() => set({ favsOnly: !filters.favsOnly })} />
-          {favCount === 0 && <p className="muted small hint">Tap the ♥ on any deal to save it here.</p>}
+        </section>
+
+        <section>
+          <h3>Distance</h3>
+          <div className={`chip-row ${origin ? "" : "chips-off"}`} role="radiogroup" aria-label="Distance from my location">
+            {([
+              [0, "Any"],
+              [5, "5 km"],
+              [10, "10 km"],
+              [15, "15 km"],
+            ] as const).map(([k, label]) => (
+              <button
+                key={k}
+                role="radio"
+                aria-checked={filters.maxKm === k}
+                className={`chip ${filters.maxKm === k ? "on" : ""}`}
+                disabled={!origin && k !== 0}
+                onClick={() => set({ maxKm: k })}
+                title={k ? `Restaurants within ${k} km of your location` : "Any distance"}
+              >
+                {label} {origin && !loading && k !== 0 && <small>{kmCounts[k]}</small>}
+              </button>
+            ))}
+          </div>
+          {!origin && <p className="muted small hint">Set your location in the top bar to filter by distance.</p>}
         </section>
 
         <section>
           <h3>Open now</h3>
-          <div className="seg" role="radiogroup" aria-label="Open or closed">
+          <div className="chip-row" role="radiogroup" aria-label="Open or closed">
             {([
               ["any", "All"],
               ["open", "Open"],
@@ -888,7 +923,7 @@ function FilterPanel({
                 key={k}
                 role="radio"
                 aria-checked={filters.openState === k}
-                className={filters.openState === k ? "on" : ""}
+                className={`chip ${filters.openState === k ? "on" : ""}`}
                 onClick={() => set({ openState: k })}
               >
                 {label} {loading ? <span className="sk sk-num" /> : <small>{openCounts[k]}</small>}
@@ -1090,6 +1125,7 @@ function ActiveChips({ filters, setFilters, offers, selectedCards, onCardsOff }:
   const bankName = (slug: string) =>
     offers.find((o) => o.bank.slug === slug)?.bank.name ?? ALL_BANKS.find((b) => b.slug === slug)?.name ?? slug;
   const chips: { key: string; label: string; remove: () => void }[] = [
+    ...(filters.maxKm ? [{ key: "km", label: `Within ${filters.maxKm} km`, remove: () => setFilters({ ...filters, maxKm: 0 }) }] : []),
     ...(filters.favsOnly ? [{ key: "favs", label: "Favourites", remove: () => setFilters({ ...filters, favsOnly: false }) }] : []),
     ...(filters.openState !== "any"
       ? [{ key: "open", label: filters.openState === "open" ? "Open now" : "Closed now", remove: () => setFilters({ ...filters, openState: "any" }) }]
@@ -1126,7 +1162,7 @@ function Logo({ src, name, size = "md" }: { src?: string | null; name: string; s
   );
 }
 
-// Favourites are kept in this browser only (no accounts yet).
+// Favourites: kept in this browser, and sent to the server so restaurants can see how many people saved a deal.
 const FAV_KEY = "df:favourites";
 function readFavs(): number[] {
   try {
@@ -1138,16 +1174,20 @@ function readFavs(): number[] {
 }
 function useFavourites() {
   const [favs, setFavs] = useState<number[]>(readFavs);
+  const favsRef = useRef(favs);
+  favsRef.current = favs;
   const toggle = useCallback((id: number) => {
-    setFavs((cur) => {
-      const next = cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id];
-      try {
-        localStorage.setItem(FAV_KEY, JSON.stringify(next));
-      } catch {
-        /* storage unavailable — keep in memory */
-      }
-      return next;
-    });
+    const cur = favsRef.current;
+    const on = !cur.includes(id);
+    const next = on ? [...cur, id] : cur.filter((x) => x !== id);
+    favsRef.current = next;
+    setFavs(next);
+    try {
+      localStorage.setItem(FAV_KEY, JSON.stringify(next));
+    } catch {
+      /* storage unavailable — keep in memory */
+    }
+    saveFavourite(id, on); // so restaurants can see how many people saved their deal
   }, []);
   return { favs, toggle };
 }
@@ -1244,6 +1284,7 @@ function OfferCard({
   onToggleFav,
   me,
   now,
+  count,
 }: {
   o: DashOffer;
   onOpen: () => void;
@@ -1252,6 +1293,7 @@ function OfferCard({
   onToggleFav: () => void;
   me?: Coords;
   now: Date;
+  count?: number; // grouped view: how many offers this restaurant has
 }) {
   const name = placeName(o);
   const { branch, km } = nearestBranch(o, me);
@@ -1309,6 +1351,7 @@ function OfferCard({
 
         <div className="offer-deal">
           <span className="offer-pct">{offerText}</span>
+          {count != null && <OfferCount n={count} />}
           <span className="offer-deal-meta">
             on {days === "Every day" ? "every day" : days}
             {o.max_discount_amount != null ? ` · up to ${money(o.max_discount_amount, o.currency)}` : ""}
@@ -1316,6 +1359,16 @@ function OfferCard({
         </div>
       </div>
     </div>
+  );
+}
+
+/** "(12)" next to the discount; hover (or tap / focus) shows "12 offers available". */
+function OfferCount({ n }: { n: number }) {
+  const tip = `${n} offer${n === 1 ? "" : "s"} available`;
+  return (
+    <span className="offer-count" tabIndex={0} aria-label={tip} data-tip={tip}>
+      ({n})
+    </span>
   );
 }
 
@@ -1396,9 +1449,9 @@ function GroupCard({
 
         <div className="offer-deal">
           <span className="offer-pct">
-            {best.discount_percent != null ? `Up to ${pct(best.discount_percent)} OFF` : best.title}
+            {best.discount_percent != null ? `${pct(best.discount_percent)} OFF` : best.title}
           </span>
-          <span className="offer-deal-meta">{offers.length} offers</span>
+          <OfferCount n={offers.length} />
         </div>
       </div>
     </div>
@@ -1645,7 +1698,7 @@ export function DrawerBody({ o, siblings, loggedIn, onVisited, onClose, onPickPl
     return (
       <div className="rp-grid">
         <aside className="rp-left">
-          <div className="rp-panel">
+          <div className="rp-panel rp-info">
             <div className="rp-hero">
               <CoverImage
                 src={list.find((x) => x.image_url && x.image_url !== x.business?.logo_url)?.image_url ?? o.image_url}
@@ -1666,8 +1719,9 @@ export function DrawerBody({ o, siblings, loggedIn, onVisited, onClose, onPickPl
             </div>
             <div className="rp-pad">{linkRow}</div>
           </div>
-          {menuSec && <div className="rp-panel rp-pad">{menuSec}</div>}
-          <div className="rp-panel rp-pad">{branchesSec}</div>
+          {/* on tablet / phone these two move below the offers (see restaurant.css) */}
+          {menuSec && <div className="rp-panel rp-pad rp-menu">{menuSec}</div>}
+          <div className="rp-panel rp-pad rp-branches">{branchesSec}</div>
         </aside>
 
         <section className="rp-right">

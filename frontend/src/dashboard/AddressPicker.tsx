@@ -6,12 +6,13 @@ import { useState } from "react";
 import type { Coords, LocState } from "../shared/geo";
 import type { PlaceDetails } from "../shared/maps/api";
 import { MapPicker } from "../shared/maps/MapPicker";
+import "./addressPicker.css";
 import type { Place } from "../profile/api";
 
 /** Where distances are measured from. */
 export type ActiveLoc =
   | { source: "current" }
-  | { source: "home" | "work" | "search"; label: string; coords: Coords };
+  | { source: "home" | "work" | "search"; label: string; coords: Coords; full?: string; accuracy?: number | null };
 
 const ICON = {
   pin: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" /><circle cx="12" cy="9.5" r="2.5" /></svg>,
@@ -61,7 +62,8 @@ export function AddressPicker({
           onClose={() => setOpen(false)}
           onConfirm={async (p) => {
             setOpen(false);
-            onPick({ source: p.saveAs ?? "search", label: p.label, coords: p.coords });
+            // address, lat/lng and accuracy are kept in the app's location state (and in localStorage)
+            onPick({ source: p.saveAs ?? "search", label: p.label, coords: p.coords, full: p.full, accuracy: p.accuracy });
             if (p.saveAs) {
               await onSave(p.saveAs, {
                 place_id: "manual", name: null, address: p.full, short_address: p.label, lat: p.coords.lat, lng: p.coords.lng,

@@ -1,0 +1,1250 @@
+[
+ {
+  "name": "DHA Phase 1",
+  "lat": 31.480015,
+  "lng": 74.393866,
+  "address": "DHA Phase 1, Keer, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54791, Pakistan",
+  "area": null,
+  "_n": "dha phase 1"
+ },
+ {
+  "name": "DHA Phase 2",
+  "lat": 31.476647,
+  "lng": 74.405202,
+  "address": "DHA Phase 2, Rehman Villas, Chung Khurad, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Rehman Villas",
+  "_n": "dha phase 2"
+ },
+ {
+  "name": "DHA Phase 3",
+  "lat": 31.473999,
+  "lng": 74.377386,
+  "address": "DHA Phase 3, Eden Cottages, Charr, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54793, Pakistan",
+  "area": "Eden Cottages",
+  "_n": "dha phase 3"
+ },
+ {
+  "name": "DHA Phase 4",
+  "lat": 31.461237,
+  "lng": 74.387638,
+  "address": "DHA Phase 4, Sec FF Ph 4, Kamahan, Model Town Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Sec FF Ph 4",
+  "_n": "dha phase 4"
+ },
+ {
+  "name": "DHA Phase 5",
+  "lat": 31.463463,
+  "lng": 74.410426,
+  "address": "DHA Phase 5, DHA Phase V, Sultan Colony, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54910, Pakistan",
+  "area": "DHA Phase V",
+  "_n": "dha phase 5"
+ },
+ {
+  "name": "DHA Phase 6",
+  "lat": 31.471632,
+  "lng": 74.451084,
+  "address": "DHA Phase 6, Defense, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54920, Pakistan",
+  "area": null,
+  "_n": "dha phase 6"
+ },
+ {
+  "name": "DHA Phase 7",
+  "lat": 31.463464,
+  "lng": 74.490065,
+  "address": "DHA Phase 7, Sangatpura, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "dha phase 7"
+ },
+ {
+  "name": "DHA Phase 8",
+  "lat": 31.491098,
+  "lng": 74.444854,
+  "address": "DHA Phase 8, Jindra Kalan, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "dha phase 8"
+ },
+ {
+  "name": "DHA Phase 9",
+  "lat": 31.442939,
+  "lng": 74.44271,
+  "address": "DHA Phase 9, Mota Singhwala, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "dha phase 9"
+ },
+ {
+  "name": "DHA Phase 10",
+  "lat": 31.331507,
+  "lng": 74.414181,
+  "address": "DHA Phase 10, Biliana Khu, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "dha phase 10"
+ },
+ {
+  "name": "DHA Phase 9 Town",
+  "lat": 31.442939,
+  "lng": 74.44271,
+  "address": "DHA Phase 9 Town, Roranwala, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "dha phase 9 town"
+ },
+ {
+  "name": "DHA Phase 9 Prism",
+  "lat": 31.418803,
+  "lng": 74.379029,
+  "address": "DHA 9 PRISM Interchange, Lahore Ring Road, Youhanabad, Dullu, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 04200, Pakistan",
+  "area": "Youhanabad",
+  "_n": "dha phase 9 prism | prism dha phase 9 | dha prism"
+ },
+ {
+  "name": "DHA EME Sector",
+  "lat": 31.447629,
+  "lng": 74.214235,
+  "address": "DHA EME Sector, Khanpur, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 53710, Pakistan",
+  "area": null,
+  "_n": "dha eme sector"
+ },
+ {
+  "name": "DHA Raya",
+  "lat": 31.46894,
+  "lng": 74.471551,
+  "address": "Defence Raya Golf Club, Avenue 10, DHA phase 6, Lahore, Ghugian, Dhira, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54920, Pakistan",
+  "area": null,
+  "_n": "dha raya"
+ },
+ {
+  "name": "Bahria Town",
+  "lat": 31.381359,
+  "lng": 74.186347,
+  "address": "Bahria Town, Bhatti Wal, Raiwind Tehsil, Lahore District, Lahore Division, Punjab, 53720, Pakistan",
+  "area": null,
+  "_n": "bahria town"
+ },
+ {
+  "name": "Bahria Orchard",
+  "lat": 31.304791,
+  "lng": 74.203496,
+  "address": "Bahria Orchard, Manak, Raiwind Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "bahria orchard"
+ },
+ {
+  "name": "Bahria Nasheman",
+  "lat": 31.319883,
+  "lng": 74.403144,
+  "address": "Bahria Nasheman, Harnal, Model Town Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "bahria nasheman"
+ },
+ {
+  "name": "Lake City",
+  "lat": 31.353606,
+  "lng": 74.252682,
+  "address": "Lake City, Janjatey, Raiwind Tehsil, Lahore District, Lahore Division, Punjab, 51600, Pakistan",
+  "area": null,
+  "_n": "lake city"
+ },
+ {
+  "name": "Paragon City",
+  "lat": 31.530473,
+  "lng": 74.453158,
+  "address": "Paragon City, Dograi, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 53200, Pakistan",
+  "area": null,
+  "_n": "paragon city"
+ },
+ {
+  "name": "Park View City",
+  "lat": 31.452627,
+  "lng": 74.202367,
+  "address": "Park View Villas, DHA EME Sector, Khanpur, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 53710, Pakistan",
+  "area": "DHA EME Sector",
+  "_n": "park view city"
+ },
+ {
+  "name": "Valencia Town",
+  "lat": 31.413122,
+  "lng": 74.256383,
+  "address": "Valencia Town Main Boulevard, Tariq Garden, Valencia, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54790, Pakistan",
+  "area": "Valencia",
+  "_n": "valencia town | valencia housing society | valencia"
+ },
+ {
+  "name": "Wapda Town",
+  "lat": 31.436878,
+  "lng": 74.269981,
+  "address": "Wapda Town, Khumbe, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54700, Pakistan",
+  "area": null,
+  "_n": "wapda town"
+ },
+ {
+  "name": "Johar Town",
+  "lat": 31.463161,
+  "lng": 74.293917,
+  "address": "Johar Town, Lahore, Model Town Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "johar town"
+ },
+ {
+  "name": "Model Town",
+  "lat": 31.483627,
+  "lng": 74.325992,
+  "address": "Model Town, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54600, Pakistan",
+  "area": null,
+  "_n": "model town"
+ },
+ {
+  "name": "Model Town Extension",
+  "lat": 31.480879,
+  "lng": 74.311684,
+  "address": "Model Town Extension, Model Town Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "model town extension"
+ },
+ {
+  "name": "Garden Town",
+  "lat": 31.501668,
+  "lng": 74.324773,
+  "address": "Garden Town, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54600, Pakistan",
+  "area": null,
+  "_n": "garden town"
+ },
+ {
+  "name": "Faisal Town",
+  "lat": 31.476899,
+  "lng": 74.304902,
+  "address": "Faisal Town, Model Town Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "faisal town"
+ },
+ {
+  "name": "Township",
+  "lat": 31.456506,
+  "lng": 74.32008,
+  "address": "Township, 189, Lahore, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54700, Pakistan",
+  "area": null,
+  "_n": "township"
+ },
+ {
+  "name": "Allama Iqbal Town",
+  "lat": 31.510786,
+  "lng": 74.288007,
+  "address": "Allama Iqbal Town, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54570, Pakistan",
+  "area": null,
+  "_n": "allama iqbal town"
+ },
+ {
+  "name": "Gulshan-e-Ravi",
+  "lat": 31.549393,
+  "lng": 74.281075,
+  "address": "Gulshan-e-Ravi, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "gulshan e ravi"
+ },
+ {
+  "name": "Sabzazar",
+  "lat": 31.521793,
+  "lng": 74.270126,
+  "address": "sabzazar, Awan Town, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54786, Pakistan",
+  "area": "Awan Town",
+  "_n": "sabzazar"
+ },
+ {
+  "name": "Muslim Town",
+  "lat": 31.511496,
+  "lng": 74.313335,
+  "address": "Muslim Town, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54357, Pakistan",
+  "area": null,
+  "_n": "muslim town"
+ },
+ {
+  "name": "Mustafa Town",
+  "lat": 31.495815,
+  "lng": 74.273474,
+  "address": "Mustafa Town, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54570, Pakistan",
+  "area": null,
+  "_n": "mustafa town"
+ },
+ {
+  "name": "Wahdat Colony",
+  "lat": 31.516495,
+  "lng": 74.307445,
+  "address": "Wahdat Colony, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54357, Pakistan",
+  "area": null,
+  "_n": "wahdat colony"
+ },
+ {
+  "name": "Askari 9",
+  "lat": 31.54488,
+  "lng": 74.395337,
+  "address": "Askari 9 Boulevard, Askari-1, Askari Villas, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54810, Pakistan",
+  "area": "Askari Villas",
+  "_n": "askari 9 | askari ix"
+ },
+ {
+  "name": "Askari 10",
+  "lat": 31.546218,
+  "lng": 74.385755,
+  "address": "Block 10, 10, Askari 1, Saddar, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54810, Pakistan",
+  "area": "Saddar",
+  "_n": "askari 10 | askari x"
+ },
+ {
+  "name": "EME Society",
+  "lat": 31.454703,
+  "lng": 74.227934,
+  "address": "Lahore Canal Bank Co-Operative Housing Society Phase 1 (Gulbahar Park), Eden Canal Villas, DHA EME Sector, Khanpur, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "DHA EME Sector",
+  "_n": "eme society"
+ },
+ {
+  "name": "State Life Housing Society",
+  "lat": 31.444625,
+  "lng": 74.394135,
+  "address": "State Life, DHA Phase V, Kamahan, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54910, Pakistan",
+  "area": "DHA Phase V",
+  "_n": "state life housing society"
+ },
+ {
+  "name": "Etihad Town",
+  "lat": 31.46053,
+  "lng": 74.429187,
+  "address": "Etihad Marketing Real Estate and Consultants, Lahore Ring Road, DHA Phase 5, DHA Phase V, Leel, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54910, Pakistan",
+  "area": "DHA Phase V",
+  "_n": "etihad town"
+ },
+ {
+  "name": "Al Rehman Garden",
+  "lat": 31.579702,
+  "lng": 74.477723,
+  "address": "Al-Rehman Garden Phase-7, Batapur, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Batapur",
+  "_n": "al rehman garden"
+ },
+ {
+  "name": "LDA Avenue",
+  "lat": 31.415968,
+  "lng": 74.204855,
+  "address": "Lda Avenue, Musalla Abad, Raiwind Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "lda avenue"
+ },
+ {
+  "name": "Eden City",
+  "lat": 31.507647,
+  "lng": 74.434257,
+  "address": "Eden City Park, Lahore, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "eden city"
+ },
+ {
+  "name": "Eden Gardens",
+  "lat": 31.498565,
+  "lng": 74.420839,
+  "address": "Technowash Lahore, Airport Ghazi Road, Eden Avenue, Rehman Villas, Gohawa, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54000, Pakistan",
+  "area": "Rehman Villas",
+  "_n": "eden gardens"
+ },
+ {
+  "name": "Sui Gas Society",
+  "lat": 31.451609,
+  "lng": 74.394146,
+  "address": "Lahore Ring Road, Sui Gas Cop Society, DHA Phase V, Kamahan, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54910, Pakistan",
+  "area": "DHA Phase V",
+  "_n": "sui gas society"
+ },
+ {
+  "name": "Punjab Cooperative Housing Society",
+  "lat": 31.458876,
+  "lng": 74.374307,
+  "address": "Punjab Cooperative Housing Society, Amar Sidhu, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54760, Pakistan",
+  "area": null,
+  "_n": "punjab cooperative housing society"
+ },
+ {
+  "name": "Izmir Town",
+  "lat": 31.411111,
+  "lng": 74.177029,
+  "address": "Izmir Town, Chung, Raiwind Tehsil, Lahore District, Lahore Division, Punjab, 53800, Pakistan",
+  "area": null,
+  "_n": "izmir town"
+ },
+ {
+  "name": "Formanites Housing Scheme",
+  "lat": 31.44327,
+  "lng": 74.413004,
+  "address": "Formanites Housing Scheme, DHA Phase V, Leel, Model Town Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "DHA Phase V",
+  "_n": "formanites housing scheme"
+ },
+ {
+  "name": "NFC Society",
+  "lat": 31.41225,
+  "lng": 74.264679,
+  "address": "NFC Main Blvd, UET Housing Society Phase-1 Lahore, Valencia, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54700, Pakistan",
+  "area": "Valencia",
+  "_n": "nfc society"
+ },
+ {
+  "name": "PIA Housing Society",
+  "lat": 31.446112,
+  "lng": 74.276677,
+  "address": "PIA Housing Society, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54770, Pakistan",
+  "area": null,
+  "_n": "pia housing society"
+ },
+ {
+  "name": "Canal Garden",
+  "lat": 31.519528,
+  "lng": 74.32668,
+  "address": "Canal, Johar Colony Sargodha, Garden Town, Rehman Pura, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 57760, Pakistan",
+  "area": "Rehman Pura",
+  "_n": "canal garden"
+ },
+ {
+  "name": "Bankers Town",
+  "lat": 31.450677,
+  "lng": 74.396462,
+  "address": "eHaus Coworking Space, 148, Block A, Bankers Town, Lahore Ring Road, DHA Phase 5, DHA Phase V, Leel, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54792, Pakistan",
+  "area": "DHA Phase V",
+  "_n": "bankers town"
+ },
+ {
+  "name": "Canal View",
+  "lat": 31.480695,
+  "lng": 74.249204,
+  "address": "Canal View, Multan Road, Sunflower Housing Society, Niaz Baig, Gopi Rai, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 53701, Pakistan",
+  "area": "Niaz Baig",
+  "_n": "canal view"
+ },
+ {
+  "name": "Punjab University Town",
+  "lat": 31.470326,
+  "lng": 74.409744,
+  "address": "Lahore University of Management Sciences, Street 9, DHA Phase 5, DHA Phase V, Leel, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54792, Pakistan",
+  "area": "DHA Phase V",
+  "_n": "punjab university town"
+ },
+ {
+  "name": "Jubilee Town",
+  "lat": 31.41825,
+  "lng": 74.183931,
+  "address": "Jubilee Town, Chung, Raiwind Tehsil, Lahore District, Lahore Division, Punjab, 53800, Pakistan",
+  "area": null,
+  "_n": "jubilee town"
+ },
+ {
+  "name": "Revenue Society",
+  "lat": 31.476302,
+  "lng": 74.298667,
+  "address": "BOR Board of Revenue Housing Society, Dhana Singh Wala, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 55800, Pakistan",
+  "area": "Dhana Singh Wala",
+  "_n": "revenue society"
+ },
+ {
+  "name": "Engineers Town",
+  "lat": 31.412025,
+  "lng": 74.296702,
+  "address": "Engineers Town, Bagrian Dharam Chand, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54700, Pakistan",
+  "area": "Bagrian Dharam Chand",
+  "_n": "engineers town"
+ },
+ {
+  "name": "Tech Society",
+  "lat": 31.482861,
+  "lng": 74.278838,
+  "address": "TECH Society, Mustafa Town, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54780, Pakistan",
+  "area": "Mustafa Town",
+  "_n": "tech society"
+ },
+ {
+  "name": "Hamza Town",
+  "lat": 31.357848,
+  "lng": 74.381595,
+  "address": "Hamza Town Phase 2, Shahzad, Model Town Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Hamza Town Phase 2",
+  "_n": "hamza town"
+ },
+ {
+  "name": "Green Town",
+  "lat": 31.432055,
+  "lng": 74.307465,
+  "address": "Green Town, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54770, Pakistan",
+  "area": null,
+  "_n": "green town"
+ },
+ {
+  "name": "Gulshan-e-Lahore",
+  "lat": 31.549971,
+  "lng": 74.269453,
+  "address": "Lahore Ring Road, Gulshan-e-Ravi, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54500, Pakistan",
+  "area": "Gulshan-e-Ravi",
+  "_n": "gulshan e lahore"
+ },
+ {
+  "name": "Al-Kabir Town",
+  "lat": 31.482049,
+  "lng": 74.259993,
+  "address": "Al - Madina Masjid, Syed Kabir Ali Shah Road, Sunflower Housing Society, Mustafa Town, Rasoolpur, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54780, Pakistan",
+  "area": "Mustafa Town",
+  "_n": "al kabir town"
+ },
+ {
+  "name": "Kings Town",
+  "lat": 31.424745,
+  "lng": 74.355882,
+  "address": "New Kings Packages (Pvt) Ltd, Firozpur Road, Satellite Town, Green Cap Housing Scheme, Dullu Khurd, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 04200, Pakistan",
+  "area": "Green Cap Housing Scheme",
+  "_n": "kings town"
+ },
+ {
+  "name": "New Lahore City",
+  "lat": 31.542782,
+  "lng": 74.281462,
+  "address": "St no 12 New Shalimar colony Multan road Lahore, 5, New Shalimar Road, Gulshan-e-Ravi, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54000, Pakistan",
+  "area": "Gulshan-e-Ravi",
+  "_n": "new lahore city"
+ },
+ {
+  "name": "Lahore Motorway City",
+  "lat": 31.644124,
+  "lng": 74.215053,
+  "address": "Lahore Motorway City, Jhugian Sialan, Ferozewala Tehsil, Sheikhupura District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "lahore motorway city"
+ },
+ {
+  "name": "Lahore Smart City",
+  "lat": 31.711047,
+  "lng": 74.285098,
+  "address": "Lahore Smart City, Ferozewala, Ferozewala Tehsil, Sheikhupura District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "lahore smart city"
+ },
+ {
+  "name": "Divine Gardens",
+  "lat": 31.502923,
+  "lng": 74.414995,
+  "address": "Divine Garden Park, Rehman Gardens, Gohawa, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Rehman Gardens",
+  "_n": "divine gardens"
+ },
+ {
+  "name": "Super Town",
+  "lat": 31.489271,
+  "lng": 74.381225,
+  "address": "Super Town, Charr, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54791, Pakistan",
+  "area": null,
+  "_n": "super town"
+ },
+ {
+  "name": "Ali Town",
+  "lat": 31.463225,
+  "lng": 74.245958,
+  "address": "Ali Town, Rasoolpur, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "ali town"
+ },
+ {
+  "name": "Shalimar Town",
+  "lat": 31.376302,
+  "lng": 74.360488,
+  "address": "Shalimar Town Rd, Gajju Matah, Model Town Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Gajju Matah",
+  "_n": "shalimar town"
+ },
+ {
+  "name": "Lalazar Colony",
+  "lat": 31.47098,
+  "lng": 74.244345,
+  "address": "Lalazar Park, Sunflower Housing Society, Niaz Baig, Rasoolpur, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Niaz Baig",
+  "_n": "lalazar colony | lalazar"
+ },
+ {
+  "name": "Nishtar Colony",
+  "lat": 31.419825,
+  "lng": 74.358384,
+  "address": "Nishtar Colony, Firozpur Road, Satellite Town, Green Cap Housing Scheme, Dullu Khurd, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 04200, Pakistan",
+  "area": "Green Cap Housing Scheme",
+  "_n": "nishtar colony"
+ },
+ {
+  "name": "Gulfishan Colony",
+  "lat": 31.546556,
+  "lng": 74.292981,
+  "address": "Gulfishan Colony, Chauburji Garden, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Chauburji Garden",
+  "_n": "gulfishan colony"
+ },
+ {
+  "name": "Abdalian Cooperative Housing Society",
+  "lat": 31.454613,
+  "lng": 74.266597,
+  "address": "GeroX®, 181-C Abdalian's Co-operative Housing Society, Nazaria-e-Pakistan Avenue, Sunflower Housing Society, Johar Town, Rasoolpur, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54782, Pakistan",
+  "area": "Johar Town",
+  "_n": "abdalian cooperative housing society | abdalians housing society | abdalian society"
+ },
+ {
+  "name": "Fazaia Housing Scheme",
+  "lat": 31.37629,
+  "lng": 74.241433,
+  "address": "Fazaia Housing Scheme, Kot Channan Din, Raiwind Tehsil, Lahore District, Lahore Division, Punjab, 51600, Pakistan",
+  "area": null,
+  "_n": "fazaia housing scheme"
+ },
+ {
+  "name": "Air Avenue",
+  "lat": 31.502484,
+  "lng": 74.447972,
+  "address": "Air Avenue Luxury Apartments, Street 9, Jhugian Alfa, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 53200, Pakistan",
+  "area": null,
+  "_n": "air avenue"
+ },
+ {
+  "name": "Sukh Chayn Gardens",
+  "lat": 31.391466,
+  "lng": 74.15978,
+  "address": "Sukh Chayn Gardens, Maraka, Raiwind Tehsil, Lahore District, Lahore Division, Punjab, 53800, Pakistan",
+  "area": null,
+  "_n": "sukh chayn gardens"
+ },
+ {
+  "name": "Khayaban-e-Amin",
+  "lat": 31.381768,
+  "lng": 74.269798,
+  "address": "Khayaban e Amin, Ali Akbar Road, Valencia, Halloki, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54790, Pakistan",
+  "area": "Valencia",
+  "_n": "khayaban e amin"
+ },
+ {
+  "name": "Garden Town Ali Block",
+  "lat": 31.502776,
+  "lng": 74.324274,
+  "address": "Garden Town Ali Block, Garden Town, Model Town Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Garden Town",
+  "_n": "garden town ali block"
+ },
+ {
+  "name": "Gulberg",
+  "lat": 31.511996,
+  "lng": 74.343018,
+  "address": "Gulberg, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54660, Pakistan",
+  "area": null,
+  "_n": "gulberg"
+ },
+ {
+  "name": "Gulberg II",
+  "lat": 31.523694,
+  "lng": 74.346313,
+  "address": "Khadam Carpet Sofa White, 8-E, Al Haseeb Plaza Main Market, Gulberg-II, Lahore., Main Market, Gulberg-II, Main Market, Gulberg, Lahore, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 57760, Pakistan",
+  "area": "Gulberg",
+  "_n": "gulberg ii | gulberg ii"
+ },
+ {
+  "name": "Gulberg III",
+  "lat": 31.516809,
+  "lng": 74.349045,
+  "address": "CIN International, 60/C - 1, off M.M. Alam Road, (Near Telephone Exchange), Gulberg III, Lahore, Pakistan, Gulberg III, Gulberg, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54660, Pakistan",
+  "area": "Gulberg",
+  "_n": "gulberg iii | gulberg iii"
+ },
+ {
+  "name": "Gulberg V",
+  "lat": 31.507262,
+  "lng": 74.338257,
+  "address": "Serene Heights Lahore, 5, Main Boulevard Gulberg, Walton Field, Gulberg, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54000, Pakistan",
+  "area": "Gulberg",
+  "_n": "gulberg v | gulberg v"
+ },
+ {
+  "name": "Shadman",
+  "lat": 31.540211,
+  "lng": 74.326971,
+  "address": "Shadman, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 57760, Pakistan",
+  "area": null,
+  "_n": "shadman"
+ },
+ {
+  "name": "Shah Jamal",
+  "lat": 31.528341,
+  "lng": 74.327461,
+  "address": "Shah Jamal, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 57760, Pakistan",
+  "area": null,
+  "_n": "shah jamal"
+ },
+ {
+  "name": "Samanabad",
+  "lat": 31.539545,
+  "lng": 74.3017,
+  "address": "Samanabad, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54500, Pakistan",
+  "area": null,
+  "_n": "samanabad"
+ },
+ {
+  "name": "Ichhra",
+  "lat": 31.530555,
+  "lng": 74.319,
+  "address": "Ichhra, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54357, Pakistan",
+  "area": null,
+  "_n": "ichhra"
+ },
+ {
+  "name": "Mozang",
+  "lat": 31.553745,
+  "lng": 74.314149,
+  "address": "Mozang, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": null,
+  "_n": "mozang"
+ },
+ {
+  "name": "Anarkali",
+  "lat": 31.567944,
+  "lng": 74.307432,
+  "address": "Anarkali, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": null,
+  "_n": "anarkali"
+ },
+ {
+  "name": "Islampura",
+  "lat": 31.56542,
+  "lng": 74.295195,
+  "address": "Islampura, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "islampura | krishan nagar"
+ },
+ {
+  "name": "Chauburji",
+  "lat": 31.553933,
+  "lng": 74.304593,
+  "address": "Chauburji, N-5, Islamia Park, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": "Islamia Park",
+  "_n": "chauburji"
+ },
+ {
+  "name": "Sanda",
+  "lat": 31.558242,
+  "lng": 74.288445,
+  "address": "Sanda, Raj Garh, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54500, Pakistan",
+  "area": "Raj Garh",
+  "_n": "sanda"
+ },
+ {
+  "name": "Bilal Ganj",
+  "lat": 31.581739,
+  "lng": 74.30106,
+  "address": "Bilal Ganj, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": null,
+  "_n": "bilal ganj"
+ },
+ {
+  "name": "Data Darbar",
+  "lat": 31.578932,
+  "lng": 74.303719,
+  "address": "Data Darbar, Zaildar Road, Mohallah Hajveri, Bilal Ganj, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": "Bilal Ganj",
+  "_n": "data darbar"
+ },
+ {
+  "name": "Walled City",
+  "lat": 31.583184,
+  "lng": 74.318484,
+  "address": "Walled City of Lahore, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Walled City of Lahore",
+  "_n": "walled city"
+ },
+ {
+  "name": "Ravi Road",
+  "lat": 31.595049,
+  "lng": 74.3015,
+  "address": "Ravi Road, Ravi Park, Qasurpura, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": "Qasurpura",
+  "_n": "ravi road"
+ },
+ {
+  "name": "Shahdara",
+  "lat": 31.615272,
+  "lng": 74.290864,
+  "address": "Shahdara, Grand Trunk Road, Jia Musa, Shahdara Bagh, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54950, Pakistan",
+  "area": "Jia Musa",
+  "_n": "shahdara"
+ },
+ {
+  "name": "Baghbanpura",
+  "lat": 31.584503,
+  "lng": 74.376665,
+  "address": "Baghbanpura, Begampura, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "baghbanpura"
+ },
+ {
+  "name": "Shalimar",
+  "lat": 31.587129,
+  "lng": 74.382159,
+  "address": "Shalimar Gardens, Baghbanpura, Kotli Abdur Rahman, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Baghbanpura",
+  "_n": "shalimar"
+ },
+ {
+  "name": "Mughalpura",
+  "lat": 31.564867,
+  "lng": 74.37861,
+  "address": "Mughalpura, Ramgarh, Begampura, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, 54840, Pakistan",
+  "area": "Ramgarh",
+  "_n": "mughalpura"
+ },
+ {
+  "name": "Harbanspura",
+  "lat": 31.575117,
+  "lng": 74.425252,
+  "address": "Harbanspura, Salamatpura, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, 54850, Pakistan",
+  "area": null,
+  "_n": "harbanspura"
+ },
+ {
+  "name": "Cavalry Ground",
+  "lat": 31.502396,
+  "lng": 74.369186,
+  "address": "Cavalry Ground, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 65000, Pakistan",
+  "area": null,
+  "_n": "cavalry ground"
+ },
+ {
+  "name": "Saddar",
+  "lat": 31.549955,
+  "lng": 74.380229,
+  "address": "Saddar, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54810, Pakistan",
+  "area": null,
+  "_n": "saddar"
+ },
+ {
+  "name": "Lahore Cantt",
+  "lat": 31.530547,
+  "lng": 74.361125,
+  "address": "Lahore Cantonment, To Frm Lhr Cannt Rail Station, Saint John Park, Upper Mall, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 57760, Pakistan",
+  "area": "Upper Mall",
+  "_n": "lahore cantonment | lahore cantonment"
+ },
+ {
+  "name": "Walton",
+  "lat": 31.48734,
+  "lng": 74.361717,
+  "address": "Walton, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 65000, Pakistan",
+  "area": null,
+  "_n": "walton"
+ },
+ {
+  "name": "Bedian Road",
+  "lat": 31.477704,
+  "lng": 74.424181,
+  "address": "Bedian Road, Haji Park, Rehman Villas, Isma'il Pura, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54910, Pakistan",
+  "area": "Rehman Villas",
+  "_n": "bedian road"
+ },
+ {
+  "name": "Barki Road",
+  "lat": 31.508087,
+  "lng": 74.469576,
+  "address": "SCIL School Barki Road Branch, Main Barki Rd, Sector S DHA Phase 8, Lahore, Punjab, Pakistan, Burki Road, DHA Phase 8, Paragon City, Durgpura, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 53200, Pakistan",
+  "area": "Paragon City",
+  "_n": "barki road"
+ },
+ {
+  "name": "Raiwind",
+  "lat": 31.244358,
+  "lng": 74.213813,
+  "address": "Raiwind, Raiwind Tehsil, Lahore District, Lahore Division, Punjab, 55150, Pakistan",
+  "area": null,
+  "_n": "raiwind"
+ },
+ {
+  "name": "Thokar Niaz Baig",
+  "lat": 31.481017,
+  "lng": 74.238238,
+  "address": "Thokar Niaz Baig, Niaz Baig, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54000, Pakistan",
+  "area": "Niaz Baig",
+  "_n": "thokar niaz baig"
+ },
+ {
+  "name": "Kot Lakhpat",
+  "lat": 31.466419,
+  "lng": 74.338257,
+  "address": "Kot Lakhpat, Amar Sidhu, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54760, Pakistan",
+  "area": null,
+  "_n": "kot lakhpat"
+ },
+ {
+  "name": "Township Sector A",
+  "lat": 31.462235,
+  "lng": 74.319952,
+  "address": "Event Complex, Peco Rd, Sector A1 Sector A 1 Township, Lahore, Punjab 54600, Newtown Road, PECO Factory, Ghawala Colony, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54000, Pakistan",
+  "area": null,
+  "_n": "township sector a"
+ },
+ {
+  "name": "Zaman Park",
+  "lat": 31.550753,
+  "lng": 74.353274,
+  "address": "Zaman Park, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "zaman park"
+ },
+ {
+  "name": "Aitchison College",
+  "lat": 31.550377,
+  "lng": 74.346708,
+  "address": "Aitchison College, Chamba Lane, Shah Shams Qari, G.O.R., Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54900, Pakistan",
+  "area": "G.O.R.",
+  "_n": "aitchison college"
+ },
+ {
+  "name": "Garhi Shahu",
+  "lat": 31.561852,
+  "lng": 74.348566,
+  "address": "Garhi Shahu, Begampura, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "garhi shahu"
+ },
+ {
+  "name": "Dharampura",
+  "lat": 31.552591,
+  "lng": 74.365227,
+  "address": "Dharampura, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54900, Pakistan",
+  "area": null,
+  "_n": "dharampura"
+ },
+ {
+  "name": "Daroghawala",
+  "lat": 31.587253,
+  "lng": 74.404541,
+  "address": "Daroghawala, Grand Trunk Road, Devi Pura, Sharif Pura, Wara Gujjran, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, 54850, Pakistan",
+  "area": "Sharif Pura",
+  "_n": "daroghawala"
+ },
+ {
+  "name": "Ghaziabad",
+  "lat": 31.557678,
+  "lng": 74.393496,
+  "address": "Ghaziabad, Begampura, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, 54840, Pakistan",
+  "area": null,
+  "_n": "ghaziabad"
+ },
+ {
+  "name": "Misri Shah",
+  "lat": 31.587673,
+  "lng": 74.327039,
+  "address": "Misri Shah, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": null,
+  "_n": "misri shah"
+ },
+ {
+  "name": "Lakshmi Chowk",
+  "lat": 31.567424,
+  "lng": 74.324571,
+  "address": "Lakshmi Chowk, Qila Gujjar Singh, Begampura, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Qila Gujjar Singh",
+  "_n": "lakshmi chowk"
+ },
+ {
+  "name": "Qila Gujjar Singh",
+  "lat": 31.569079,
+  "lng": 74.329545,
+  "address": "Qila Gujjar Singh, Begampura, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "qila gujjar singh"
+ },
+ {
+  "name": "Gawalmandi",
+  "lat": 31.572373,
+  "lng": 74.31803,
+  "address": "Gawalmandi, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": null,
+  "_n": "gawalmandi"
+ },
+ {
+  "name": "Bhati Gate",
+  "lat": 31.578964,
+  "lng": 74.308893,
+  "address": "Bhatti Gate, Hakiman Bazaar, Mohallah Molana Roohi, Walled City of Lahore, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": "Mohallah Molana Roohi",
+  "_n": "bhati gate | bhatti gate"
+ },
+ {
+  "name": "Lohari Gate",
+  "lat": 31.577303,
+  "lng": 74.31334,
+  "address": "Lohari Gate, Lohari Gate Bazaar, Kucha Shami Hoqan, Walled City of Lahore, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": "Kucha Shami Hoqan",
+  "_n": "lohari gate"
+ },
+ {
+  "name": "Model Colony",
+  "lat": 31.474704,
+  "lng": 74.367191,
+  "address": "Model Colony, Amar Sidhu, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54793, Pakistan",
+  "area": null,
+  "_n": "model colony"
+ },
+ {
+  "name": "Rehmanpura",
+  "lat": 31.522776,
+  "lng": 74.318809,
+  "address": "Rehmanpura, Rehman Pura, Model Town Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Rehman Pura",
+  "_n": "rehmanpura"
+ },
+ {
+  "name": "Ferozepur Road",
+  "lat": 31.544255,
+  "lng": 74.315428,
+  "address": "Kacha Ferozepur Road, Saadi Park, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Saadi Park",
+  "_n": "ferozepur road"
+ },
+ {
+  "name": "Kahna",
+  "lat": 31.352336,
+  "lng": 74.372561,
+  "address": "Kahna Purana, Kashmir Patti, Model Town Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Kahna Purana",
+  "_n": "kahna"
+ },
+ {
+  "name": "Hanjarwal",
+  "lat": 31.486542,
+  "lng": 74.254136,
+  "address": "Hanjarwal, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": null,
+  "_n": "hanjarwal"
+ },
+ {
+  "name": "Multan Road",
+  "lat": 31.49588,
+  "lng": 74.263756,
+  "address": "Multan Road, Hanjarwal, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54570, Pakistan",
+  "area": "Hanjarwal",
+  "_n": "multan road"
+ },
+ {
+  "name": "Chung",
+  "lat": 31.432583,
+  "lng": 74.174348,
+  "address": "Chung, Raiwind Tehsil, Lahore District, Lahore Division, Punjab, 53800, Pakistan",
+  "area": null,
+  "_n": "chung"
+ },
+ {
+  "name": "Bhobatian",
+  "lat": 31.401624,
+  "lng": 74.227321,
+  "address": "Bhobtian, Raiwind Tehsil, Lahore District, Lahore Division, Punjab, 51600, Pakistan",
+  "area": null,
+  "_n": "bhobatian | bhobtian | bhobatian chowk"
+ },
+ {
+  "name": "Johar Town Phase 2",
+  "lat": 31.474236,
+  "lng": 74.2712,
+  "address": "Qabail Restaurant Johar Town, 429 main Blvd, Block G4, Phase 2, Johar Town Main Boulevard, Johar Town L Block, Johar Town, Rasoolpur, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54000, Pakistan",
+  "area": "Johar Town",
+  "_n": "johar town phase 2 | johar town phase ii"
+ },
+ {
+  "name": "Gulshan Ravi",
+  "lat": 31.551744,
+  "lng": 74.28304,
+  "address": "Gulshan Ravi, PTCL Exchange, Gulshan-e-Ravi, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54500, Pakistan",
+  "area": "Gulshan-e-Ravi",
+  "_n": "gulshan ravi"
+ },
+ {
+  "name": "Shad Bagh",
+  "lat": 31.599453,
+  "lng": 74.337994,
+  "address": "Shad Bagh, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54890, Pakistan",
+  "area": null,
+  "_n": "shad bagh"
+ },
+ {
+  "name": "Begumpura",
+  "lat": 31.581971,
+  "lng": 74.362423,
+  "address": "BegumPura, Singhpura, Begampura, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, 54890, Pakistan",
+  "area": "Begampura",
+  "_n": "begumpura"
+ },
+ {
+  "name": "Salamatpura",
+  "lat": 31.582118,
+  "lng": 74.416679,
+  "address": "Salamatpura, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, 54850, Pakistan",
+  "area": null,
+  "_n": "salamatpura"
+ },
+ {
+  "name": "Manawan",
+  "lat": 31.596115,
+  "lng": 74.487221,
+  "address": "Manawan, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, 53400, Pakistan",
+  "area": null,
+  "_n": "manawan"
+ },
+ {
+  "name": "MM Alam Road",
+  "lat": 31.513193,
+  "lng": 74.351218,
+  "address": "MM Alam Road, Gulberg, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54660, Pakistan",
+  "area": "Gulberg",
+  "_n": "mm alam road"
+ },
+ {
+  "name": "Liberty Market",
+  "lat": 31.511816,
+  "lng": 74.346159,
+  "address": "Liberty Market, Gulberg, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Gulberg",
+  "_n": "liberty market"
+ },
+ {
+  "name": "Main Boulevard Gulberg",
+  "lat": 31.518829,
+  "lng": 74.345182,
+  "address": "Main Boulevard Gulberg, Garden Town, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 57760, Pakistan",
+  "area": "Garden Town",
+  "_n": "main boulevard gulberg"
+ },
+ {
+  "name": "Mall Road",
+  "lat": 31.533419,
+  "lng": 74.361328,
+  "address": "Mall Road, Saint John Park, Upper Mall, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54900, Pakistan",
+  "area": "Upper Mall",
+  "_n": "mall road"
+ },
+ {
+  "name": "Jail Road",
+  "lat": 31.543102,
+  "lng": 74.325363,
+  "address": "Jail Road, Shadman Colony, Shadman, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 57760, Pakistan",
+  "area": "Shadman",
+  "_n": "jail road"
+ },
+ {
+  "name": "Fortress Stadium",
+  "lat": 31.531784,
+  "lng": 74.366064,
+  "address": "Fortress Stadium Lahore, Aziz Bhatti Road, Saint John Park, Upper Mall, Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54810, Pakistan",
+  "area": "Upper Mall",
+  "_n": "fortress stadium"
+ },
+ {
+  "name": "Packages Mall",
+  "lat": 31.471391,
+  "lng": 74.356638,
+  "address": "Packages Mall, AL-Noor Town Main Road, DHA Phase 3, Al Noor Town, Amar Sidhu, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 54760, Pakistan",
+  "area": "Al Noor Town",
+  "_n": "packages mall"
+ },
+ {
+  "name": "Emporium Mall",
+  "lat": 31.466828,
+  "lng": 74.265847,
+  "address": "Emporium Mall, Johar Town, Rasoolpur, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "Johar Town",
+  "_n": "emporium mall"
+ },
+ {
+  "name": "Mall of Lahore",
+  "lat": 31.529388,
+  "lng": 74.378437,
+  "address": "Mall of Lahore, Tufail Road (Wellington Road), Lahore Cant, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54810, Pakistan",
+  "area": "Lahore Cant",
+  "_n": "mall of lahore"
+ },
+ {
+  "name": "Hafeez Centre",
+  "lat": 31.51607,
+  "lng": 74.342986,
+  "address": "Hafeez Centre, Main Boulevard Gulberg, Garden Town, Lahore, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 57760, Pakistan",
+  "area": "Garden Town",
+  "_n": "hafeez centre"
+ },
+ {
+  "name": "Allama Iqbal International Airport",
+  "lat": 31.519498,
+  "lng": 74.401024,
+  "address": "Allama Iqbal International Airport, Street 10, Sector B, Askari X, Derh Pindi, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 54810, Pakistan",
+  "area": "Askari X",
+  "_n": "allama iqbal international airport"
+ },
+ {
+  "name": "Lahore Railway Station",
+  "lat": 31.572298,
+  "lng": 74.336153,
+  "address": "Railway Station, Nicholson Road, Tegore Park, Qila Gujjar Singh, Begampura, Shalimar Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": "Qila Gujjar Singh",
+  "_n": "lahore railway station | lahore junction railway station | lahore junction"
+ },
+ {
+  "name": "Badshahi Mosque",
+  "lat": 31.588126,
+  "lng": 74.309353,
+  "address": "Badshahi Mosque, Fort Road, Shahi Mohallah, Walled City of Lahore, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": "Shahi Mohallah",
+  "_n": "badshahi mosque"
+ },
+ {
+  "name": "Minar-e-Pakistan",
+  "lat": 31.592556,
+  "lng": 74.309485,
+  "address": "Minar-e-Pakistan, Circular Road, Ravi Park, Karim Park, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": "Karim Park",
+  "_n": "minar e pakistan"
+ },
+ {
+  "name": "Gaddafi Stadium",
+  "lat": 31.513361,
+  "lng": 74.333464,
+  "address": "Gaddafi stadium, Hafeez Kardar Road, Garden Town, Model Town Tehsil, Lahore District, Lahore Division, Punjab, 57760, Pakistan",
+  "area": "Garden Town",
+  "_n": "gaddafi stadium"
+ },
+ {
+  "name": "Expo Centre Lahore",
+  "lat": 31.473886,
+  "lng": 74.259061,
+  "address": "Lahore Chiropractor Clinic, Expo Centre Road, Lahore Expo Centre, Sunflower Housing Society, Johar Town, Rasoolpur, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54780, Pakistan",
+  "area": "Johar Town",
+  "_n": "expo centre lahore"
+ },
+ {
+  "name": "Lahore Zoo",
+  "lat": 31.556689,
+  "lng": 74.325537,
+  "address": "Lahore Zoo, Mall Road, Regal Chowk, Charing Cross, Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": "Charing Cross",
+  "_n": "lahore zoo"
+ },
+ {
+  "name": "Jallo Park",
+  "lat": 31.57177,
+  "lng": 74.474534,
+  "address": "Jallo Park, Jallo Park Road, Jallo, Lahore Cantonment Tehsil, Lahore District, Lahore Division, Punjab, 53400, Pakistan",
+  "area": null,
+  "_n": "jallo park"
+ },
+ {
+  "name": "Race Course Park",
+  "lat": 31.543881,
+  "lng": 74.336562,
+  "address": "Race Course Park, G.O.R., Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, Pakistan",
+  "area": "G.O.R.",
+  "_n": "race course park"
+ },
+ {
+  "name": "Bagh-e-Jinnah",
+  "lat": 31.552396,
+  "lng": 74.32885,
+  "address": "Bagh-e-Jinnah Library, Racecourse Road, G.O.R., Lahore, Lahore City Tehsil, Lahore District, Lahore Division, Punjab, 54100, Pakistan",
+  "area": "G.O.R.",
+  "_n": "bagh e jinnah"
+ }
+]

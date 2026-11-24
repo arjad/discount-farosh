@@ -1,22 +1,29 @@
 import { useEffect, useState, type FormEvent } from "react";
 import logo from "../assets/logo.png";
-import { CITIES } from "../home/data";
-import { authApi } from "./api";
+import { CITIES, COUNTRIES } from "../home/data";
+import { authApi, type Me, type Role } from "./api";
+import { saveKind } from "../shared/role";
 import "./auth.css";
 
 type Mode = "login" | "signup";
 
 const COVER = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1400&q=75&auto=format&fit=crop";
 
-/** Where to go after logging in: ?next=/somewhere (same-site paths only), else the dashboard. */
-function nextPath() {
+/** Where to go after logging in: ?next=/somewhere (same-site paths only), else the dashboard
+ *  (/dashboard shows restaurant accounts their own discount manager). */
+function nextPath(u?: Me | null) {
   const n = new URLSearchParams(window.location.search).get("next");
-  return n && n.startsWith("/") && !n.startsWith("//") ? n : "/dashboard";
+  if (n && n.startsWith("/") && !n.startsWith("//")) return n;
+  return "/dashboard"; // the same URL shows the right dashboard for customers and restaurants
 }
+
+/** ?as=restaurant opens the sign-up form on the Restaurant tab. */
+const startRole = (): Role => (new URLSearchParams(window.location.search).get("as") === "restaurant" ? "restaurant" : "client");
 
 export default function Auth() {
   const mode: Mode = window.location.pathname.startsWith("/signup") ? "signup" : "login";
-  const [form, setForm] = useState({ full_name: "", email: "", password: "", phone: "", city: "" });
+  const [role, setRoleState] = useState<Role>(startRole);
+  const [form, setForm] = useState({ full_name: "", restaurant_name: "", email: "", password: "", phone: "", city: "", country: "Pakistan" });
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,21 +31,41 @@ export default function Auth() {
   useEffect(() => {
     document.title = `${mode === "login" ? "Log in" : "Sign up"} · Discount فرویش`;
     // already logged in? skip the form
-    authApi.me().then((u) => u && window.location.replace(nextPath()));
+    authApi.me().then((u) => u && window.location.replace(nextPath(u)));
   }, [mode]);
 
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value });
   const other = mode === "login" ? "/signup" : "/login";
-  const keepNext = window.location.search;
+  const keepNext = (() => {
+    const q = new URLSearchParams(window.location.search);
+    q.delete("as");
+    const s = q.toString();
+    return s ? `?${s}` : "";
+  })();
+  const isRest = mode === "signup" && role === "restaurant";
+
+  /** Switch Client / Restaurant — same /signup URL, the choice is kept in ?as= so it survives a reload. */
+  function setRole(r: Role) {
+    setRoleState(r);
+    setError(null);
+    const q = new URLSearchParams(window.location.search);
+    if (r === "restaurant") q.set("as", "restaurant");
+    else q.delete("as");
+    const s = q.toString();
+    window.history.replaceState(null, "", `/signup${s ? `?${s}` : ""}`);
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError(null);
     try {
-      if (mode === "login") await authApi.login(form.email, form.password);
-      else await authApi.signup(form);
-      window.location.assign(nextPath());
+      const u =
+        mode === "login"
+          ? await authApi.login(form.email, form.password)
+          : await authApi.signup({ ...form, role, restaurant_name: isRest ? form.restaurant_name : undefined });
+      saveKind(u.role === "restaurant" ? "restaurant" : "customer");
+      window.location.assign(nextPath(u));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setBusy(false);
@@ -53,17 +80,36 @@ export default function Auth() {
         </a>
 
         <div className="auth-form-wrap">
-          <h1>{mode === "login" ? "Welcome back" : "Create your account"}</h1>
+          <h1>{mode === "login" ? "Welcome back" : isRest ? "List your restaurant" : "Create your account"}</h1>
           <p className="auth-lead">
             {mode === "login"
-              ? "Log in to see the card discounts near you."
-              : "Save your cards and favourite restaurants, and see which deals work for you today."}
+              ? "Log in to your customer or restaurant account."
+              : isRest
+                ? "Create a restaurant account to manage how your restaurant and its bank deals appear."
+                : "Save your cards and favourite restaurants, and see which deals work for you today."}
           </p>
 
+          {mode === "signup" && (
+            <div className="auth-role" role="tablist" aria-label="Sign up as">
+              <button type="button" role="tab" aria-selected={role === "client"} className={role === "client" ? "on" : ""} onClick={() => setRole("client")}>
+                Sign up as a client
+              </button>
+              <button type="button" role="tab" aria-selected={role === "restaurant"} className={role === "restaurant" ? "on" : ""} onClick={() => setRole("restaurant")}>
+                Sign up as a restaurant
+              </button>
+            </div>
+          )}
+
           <form className="auth-form" onSubmit={submit} noValidate>
+            {isRest && (
+              <label className="field">
+                <span>Restaurant name</span>
+                <input value={form.restaurant_name} onChange={set("restaurant_name")} autoComplete="organization" placeholder="e.g. Café Aylanto" required minLength={2} />
+              </label>
+            )}
             {mode === "signup" && (
               <label className="field">
-                <span>Full name</span>
+                <span>{isRest ? "Your name" : "Full name"}</span>
                 <input value={form.full_name} onChange={set("full_name")} autoComplete="name" placeholder="Ali Khan" required minLength={2} />
               </label>
             )}
@@ -91,7 +137,7 @@ export default function Auth() {
             {mode === "signup" && (
               <div className="field-row">
                 <label className="field">
-                  <span>Phone <small>(optional)</small></span>
+                  <span>Phone {!isRest && <small>(optional)</small>}</span>
                   <input type="tel" value={form.phone} onChange={set("phone")} autoComplete="tel" placeholder="03xx xxxxxxx" />
                 </label>
                 <label className="field">
@@ -103,11 +149,19 @@ export default function Auth() {
                 </label>
               </div>
             )}
+            {mode === "signup" && (
+              <label className="field">
+                <span>Country</span>
+                <select value={form.country} onChange={set("country")} autoComplete="country-name">
+                  {COUNTRIES.map((c) => <option key={c}>{c}</option>)}
+                </select>
+              </label>
+            )}
 
             {error && <p className="auth-error" role="alert">{error}</p>}
 
             <button className="auth-submit" disabled={busy}>
-              {busy ? "Please wait…" : mode === "login" ? "Log in" : "Create account"}
+              {busy ? "Please wait…" : mode === "login" ? "Log in" : isRest ? "Create restaurant account" : "Create account"}
             </button>
           </form>
 
@@ -115,6 +169,11 @@ export default function Auth() {
             {mode === "login" ? "New here?" : "Already have an account?"}{" "}
             <a href={other + keepNext}>{mode === "login" ? "Create an account" : "Log in"}</a>
           </p>
+          {mode === "login" && (
+            <p className="auth-switch auth-switch-sub">
+              Own a restaurant? <a href={`/signup${keepNext ? keepNext + "&" : "?"}as=restaurant`}>Sign up as a restaurant</a>
+            </p>
+          )}
           <p className="auth-fine">We never ask for card numbers, PINs or bank logins.</p>
         </div>
       </section>

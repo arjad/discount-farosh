@@ -1,34 +1,47 @@
-// Runs before `npm start`: fails fast with a clear message if a port is already taken.
-import { createServer } from "node:net";
-import { execSync } from "node:child_process";
+// Runs before `npm start`. If an earlier `npm start` of this project is still holding a port, it is
+// stopped automatically so the new one can start. Another program on a port is never touched —
+// then we stop and say how to free it.
+import { SERVERS, isOurs, oldRunTree, pidOn, terminate } from "./ports.mjs";
 
-const PORTS = { 8000: "backend (uvicorn)", 5173: "frontend (vite)" };
-
-const isFree = (port) =>
-  new Promise((resolve) => {
-    const srv = createServer()
-      .once("error", () => resolve(false))
-      .once("listening", () => srv.close(() => resolve(true)))
-      .listen(port, "127.0.0.1");
-  });
-
-const owner = (port) => {
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const kill = (pid, sig) => {
   try {
-    return execSync(`lsof -nP -iTCP:${port} -sTCP:LISTEN -t`, { encoding: "utf8" }).trim().split("\n")[0];
+    process.kill(Number(pid), sig);
   } catch {
-    return null;
+    /* already gone */
   }
 };
 
-let busy = false;
-for (const [port, what] of Object.entries(PORTS)) {
-  if (await isFree(Number(port))) continue;
-  busy = true;
-  const pid = owner(port);
-  console.error(`\n✖ Port ${port} for the ${what} is already in use${pid ? ` by PID ${pid}` : ""}.`);
-  console.error(pid ? `  Stop it with:  kill ${pid}` : `  Find it with:  lsof -i :${port}`);
+const old = [];
+let blocked = false;
+for (const { port, name } of SERVERS) {
+  const pid = pidOn(port);
+  if (!pid) continue;
+  if (isOurs(pid)) old.push({ port, name, pid });
+  else {
+    blocked = true;
+    console.error(`✖ Port ${port} (${name}) is used by another program (PID ${pid}). Stop it with:  kill ${pid}`);
+  }
 }
-if (busy) {
+if (blocked) {
   console.error("\nThen run `npm start` again.\n");
   process.exit(1);
+}
+
+const tree = oldRunTree();
+if (old.length || tree.length) {
+  console.log(old.length
+    ? `↻ Stopping the earlier run still using port${old.length > 1 ? "s" : ""} ${old.map((o) => o.port).join(", ")}…`
+    : "↻ Stopping a leftover earlier run…");
+  // the old runner and everything under it, plus whatever holds the ports (e.g. a stuck uvicorn worker)
+  await terminate([...new Set([...tree, ...old.map((o) => o.pid)])]);
+  for (let i = 0; i < 10 && SERVERS.some((x) => pidOn(x.port) && isOurs(pidOn(x.port))); i++) {
+    await terminate(SERVERS.map((x) => pidOn(x.port)).filter((p) => p && isOurs(p)), 500);
+  }
+  const still = SERVERS.filter((x) => pidOn(x.port));
+  if (still.length) {
+    console.error(`✖ Couldn't free port ${still.map((x) => x.port).join(", ")}. Run  npm run stop  and try again.`);
+    process.exit(1);
+  }
+  console.log("✔ Freed — starting fresh.\n");
 }

@@ -1,4 +1,5 @@
-export type Me = { id: number; email: string; full_name: string | null; phone: string | null; city: string | null; avatar?: string | null };
+export type Me = { id: number; email: string; full_name: string | null; phone: string | null; city: string | null; avatar?: string | null; role?: Role; restaurant_name?: string | null };
+export type Role = "client" | "restaurant";
 
 async function send<T>(path: string, body?: unknown): Promise<T> {
   const res = await fetch(path, {
@@ -27,14 +28,18 @@ function niceValidation(errors: { loc?: (string | number)[]; msg?: string }[]) {
   if (field === "email") return "Please enter a valid email address.";
   if (field === "password") return "Password must be at least 8 characters.";
   if (field === "name") return "Please enter your full name.";
-  return e?.msg ?? "Please check the form.";
+  if (field === "restaurant_name") return "Please enter your restaurant's name.";
+  return (e?.msg ?? "Please check the form.").replace(/^Value error,\s*/i, "");
 }
 
 export const authApi = {
   /** The logged-in user, or null when logged out. */
   me: () => send<Me>("/api/auth/me").catch(() => null),
   login: (email: string, password: string) => send<Me>("/api/auth/login", { email, password }),
-  signup: (body: { full_name: string; email: string; password: string; phone?: string; city?: string }) =>
+  signup: (body: {
+    full_name: string; email: string; password: string; phone?: string; city?: string; country?: string;
+    role: Role; restaurant_name?: string;
+  }) =>
     send<Me>("/api/auth/signup", body),
   logout: () => send<void>("/api/auth/logout", {}),
 };
